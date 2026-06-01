@@ -1,0 +1,889 @@
+import json
+import re
+from typing import Dict, List, Optional
+from urllib.parse import urljoin, urlparse
+from xml.etree import ElementTree as ET
+
+import pandas as pd
+import requests
+import streamlit as st
+from bs4 import BeautifulSoup
+from openai import OpenAI
+
+# ============================================================
+# PAGE CONFIG
+# ============================================================
+st.set_page_config(
+    page_title="AI Job Intelligence Dashboard",
+    page_icon="🧠",
+    layout="wide",
+)
+
+# ============================================================
+# SAVED API KEYS (paste once here)
+# ============================================================
+try:
+    SAVED_SERPAPI_KEY = st.secrets["SERPAPI_KEY"]
+except:
+    SAVED_SERPAPI_KEY = ""
+
+try:
+    SAVED_OPENAI_KEY = st.secrets["OPENAI_KEY"]
+except:
+    SAVED_OPENAI_KEY = ""
+
+# ============================================================
+# DEFAULTS
+# ============================================================
+ROLE_QUERY_DEFAULT = "Data Analyst"
+
+DEFAULT_SOURCES = [
+    "SerpAPI Google Jobs",
+    "EnglishJobs.de Network",
+    "Relocate.me",
+    "RemoteOK",
+    "We Work Remotely",
+]
+
+ENGLISH_SPEAKING_COUNTRIES = {
+    "Canada",
+    "United Kingdom",
+    "United States",
+    "Ireland",
+    "Australia",
+    "New Zealand",
+}
+
+DEFAULT_COUNTRIES = [
+    "Canada", "United Kingdom", "United States", "Ireland", "Australia", "New Zealand",
+    "Germany", "Netherlands", "France", "Belgium", "Luxembourg", "Switzerland",
+    "Austria", "Spain", "Portugal", "Italy", "Sweden", "Norway", "Denmark",
+    "Finland", "Iceland", "Poland", "Czech Republic", "Slovakia", "Hungary",
+    "Romania", "Bulgaria", "Greece", "Croatia", "Slovenia", "Serbia", "Montenegro",
+    "Bosnia and Herzegovina", "North Macedonia", "Albania", "Kosovo", "Estonia",
+    "Latvia", "Lithuania", "Ukraine", "Moldova", "Malta", "Cyprus",
+]
+
+# Country -> city fallbacks used behind the scenes for SerpAPI Google Jobs
+SERPAPI_SEARCH_LOCATIONS = {
+    "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+    "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Glasgow"],
+    "United States": ["New York", "San Francisco", "Boston", "Chicago", "Seattle", "Austin", "Washington DC"],
+    "Ireland": ["Dublin", "Cork", "Galway"],
+    "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Dusseldorf", "Cologne", "Stuttgart"],
+    "Netherlands": ["Amsterdam", "Rotterdam", "Utrecht", "Eindhoven", "The Hague"],
+    "France": ["Paris", "Lyon", "Marseille", "Toulouse", "Nantes"],
+    "Belgium": ["Brussels", "Antwerp", "Ghent"],
+    "Luxembourg": ["Luxembourg City"],
+    "Switzerland": ["Zurich", "Geneva", "Basel"],
+    "Austria": ["Vienna", "Graz", "Linz"],
+    "Spain": ["Madrid", "Barcelona", "Valencia", "Bilbao"],
+    "Portugal": ["Lisbon", "Porto"],
+    "Italy": ["Milan", "Rome", "Turin", "Bologna"],
+    "Sweden": ["Stockholm", "Gothenburg", "Malmo"],
+    "Norway": ["Oslo", "Bergen", "Trondheim"],
+    "Denmark": ["Copenhagen", "Aarhus", "Odense"],
+    "Finland": ["Helsinki", "Espoo", "Tampere"],
+    "Iceland": ["Reykjavik"],
+    "Poland": ["Warsaw", "Krakow", "Wroclaw"],
+    "Czech Republic": ["Prague", "Brno"],
+    "Slovakia": ["Bratislava"],
+    "Hungary": ["Budapest"],
+    "Romania": ["Bucharest"],
+    "Bulgaria": ["Sofia"],
+    "Greece": ["Athens", "Thessaloniki"],
+    "Croatia": ["Zagreb"],
+    "Slovenia": ["Ljubljana"],
+    "Serbia": ["Belgrade"],
+    "Montenegro": ["Podgorica"],
+    "Bosnia and Herzegovina": ["Sarajevo"],
+    "North Macedonia": ["Skopje"],
+    "Albania": ["Tirana"],
+    "Kosovo": ["Pristina"],
+    "Estonia": ["Tallinn"],
+    "Latvia": ["Riga"],
+    "Lithuania": ["Vilnius"],
+    "Ukraine": ["Kyiv", "Lviv"],
+    "Moldova": ["Chisinau"],
+    "Malta": ["Valletta"],
+    "Cyprus": ["Nicosia"],
+}
+
+SERPAPI_GL_MAP = {
+    "Canada": "ca", "United Kingdom": "uk", "United States": "us", "Ireland": "ie",
+    "Germany": "de", "Netherlands": "nl", "France": "fr", "Belgium": "be",
+    "Luxembourg": "lu", "Switzerland": "ch", "Austria": "at", "Spain": "es",
+    "Portugal": "pt", "Italy": "it", "Sweden": "se", "Norway": "no", "Denmark": "dk",
+    "Finland": "fi", "Iceland": "is", "Poland": "pl", "Czech Republic": "cz",
+    "Slovakia": "sk", "Hungary": "hu", "Romania": "ro", "Bulgaria": "bg",
+    "Greece": "gr", "Croatia": "hr", "Slovenia": "si", "Serbia": "rs",
+    "Montenegro": "me", "Bosnia and Herzegovina": "ba", "North Macedonia": "mk",
+    "Albania": "al", "Kosovo": "xk", "Estonia": "ee", "Latvia": "lv",
+    "Lithuania": "lt", "Ukraine": "ua", "Moldova": "md", "Malta": "mt", "Cyprus": "cy",
+}
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/137.0.0.0 Safari/537.36"
+    )
+}
+SESSION = requests.Session()
+SESSION.headers.update(HEADERS)
+
+ROLE_KEYWORDS = [
+    "data analyst", "data manager", "data engineer", "data governance",
+    "business intelligence", "bi analyst", "bi developer", "reporting analyst",
+    "analytics", "data specialist", "database administrator", "sql",
+    "power bi", "tableau", "etl", "dashboard", "master data",
+    "mis", "information management", "metrics", "insights",
+]
+
+INTL_KEYWORDS = [
+    "english", "international", "global", "relocation", "visa",
+    "sponsorship", "work permit", "hybrid", "remote", "english-speaking",
+    "no german required",
+]
+
+GENERIC_TITLE_SKIP = {
+    "home", "faq", "about", "privacy", "cookies", "sitemap",
+    "terms", "contact", "sign in", "log in", "post a job",
+    "jobs", "job", "search", "apply filter", "filter jobs",
+}
+
+ENGLISHJOBS_SITES = [
+    {"country": "Germany", "base": "https://englishjobs.de", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship", "/in/berlin", "/in/hamburg", "/in/frankfurt", "/in/munich", "/in/dusseldorf", "/in/cologne", "/in/stuttgart"]},
+    {"country": "France", "base": "https://englishjobs.fr", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Spain", "base": "https://englishjobs.es", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Italy", "base": "https://englishjobs.it", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Denmark", "base": "https://englishjobs.dk", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Finland", "base": "https://englishjobs.fi", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Norway", "base": "https://englishjobs.no", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Belgium", "base": "https://englishjobs.be", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Portugal", "base": "https://englishjobs.pt", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Poland", "base": "https://englishjobs.pl", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Austria", "base": "https://englishjobsearch.at", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Switzerland", "base": "https://englishjobsearch.ch", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Sweden", "base": "https://englishjobsearch.se", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+    {"country": "Netherlands", "base": "https://englishjobsearch.nl", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
+]
+
+# ============================================================
+# HELPERS
+# ============================================================
+def clean_text(value: Optional[str]) -> str:
+    if not value:
+        return ""
+    return re.sub(r"\s+", " ", str(value)).strip()
+
+
+def clamp(n: int, lo: int = 0, hi: int = 100) -> int:
+    return max(lo, min(hi, int(n)))
+
+
+def normalize_job(job: Dict) -> Dict:
+    job["title"] = clean_text(job.get("title"))
+    job["company"] = clean_text(job.get("company"))
+    job["location"] = clean_text(job.get("location"))
+    job["description"] = clean_text(job.get("description"))
+    job["url"] = clean_text(job.get("url"))
+    job["source"] = clean_text(job.get("source"))
+    job["country"] = clean_text(job.get("country"))
+    return job
+
+
+def is_candidate_text(text: str) -> bool:
+    t = (text or "").lower()
+    if not t:
+        return False
+    if any(skip == t for skip in GENERIC_TITLE_SKIP):
+        return False
+    return any(k in t for k in ROLE_KEYWORDS) or any(k in t for k in INTL_KEYWORDS)
+
+
+def infer_country_from_location(location_text: str, fallback_country: str = "") -> str:
+    t = (location_text or "").lower()
+    if not t:
+        return fallback_country or ""
+
+    if any(x in t for x in ["remote", "worldwide", "global", "europe", "emea"]):
+        return "Remote/Global"
+
+    city_to_country = {
+        "toronto": "Canada", "vancouver": "Canada", "montreal": "Canada", "calgary": "Canada", "ottawa": "Canada",
+        "london": "United Kingdom", "manchester": "United Kingdom", "birmingham": "United Kingdom", "edinburgh": "United Kingdom", "glasgow": "United Kingdom",
+        "dublin": "Ireland", "cork": "Ireland", "galway": "Ireland",
+        "new york": "United States", "san francisco": "United States", "boston": "United States", "chicago": "United States", "seattle": "United States", "austin": "United States", "washington dc": "United States", "washington": "United States",
+        "berlin": "Germany", "munich": "Germany", "münchen": "Germany", "hamburg": "Germany", "frankfurt": "Germany", "cologne": "Germany", "köln": "Germany", "düsseldorf": "Germany", "stuttgart": "Germany",
+        "amsterdam": "Netherlands", "rotterdam": "Netherlands", "utrecht": "Netherlands", "eindhoven": "Netherlands", "the hague": "Netherlands", "den haag": "Netherlands",
+        "paris": "France", "lyon": "France", "marseille": "France", "toulouse": "France", "nantes": "France",
+        "brussels": "Belgium", "antwerp": "Belgium", "ghent": "Belgium",
+        "luxembourg city": "Luxembourg", "luxembourg": "Luxembourg",
+        "zurich": "Switzerland", "zürich": "Switzerland", "geneva": "Switzerland", "genève": "Switzerland", "basel": "Switzerland",
+        "vienna": "Austria", "wien": "Austria", "graz": "Austria", "linz": "Austria",
+        "madrid": "Spain", "barcelona": "Spain", "valencia": "Spain", "bilbao": "Spain",
+        "lisbon": "Portugal", "lisboa": "Portugal", "porto": "Portugal",
+        "milan": "Italy", "rome": "Italy", "turin": "Italy", "torino": "Italy", "bologna": "Italy",
+        "stockholm": "Sweden", "gothenburg": "Sweden", "göteborg": "Sweden", "malmo": "Sweden", "malmö": "Sweden",
+        "oslo": "Norway", "bergen": "Norway", "trondheim": "Norway",
+        "copenhagen": "Denmark", "aarhus": "Denmark", "odense": "Denmark",
+        "helsinki": "Finland", "espoo": "Finland", "tampere": "Finland",
+        "warsaw": "Poland", "warszawa": "Poland", "krakow": "Poland", "wroclaw": "Poland", "wrocław": "Poland",
+        "prague": "Czech Republic", "brno": "Czech Republic",
+        "bratislava": "Slovakia", "budapest": "Hungary", "bucharest": "Romania", "bucuresti": "Romania",
+        "sofia": "Bulgaria", "athens": "Greece", "thessaloniki": "Greece", "zagreb": "Croatia",
+        "ljubljana": "Slovenia", "belgrade": "Serbia", "podgorica": "Montenegro",
+        "sarajevo": "Bosnia and Herzegovina", "skopje": "North Macedonia", "tirana": "Albania",
+        "pristina": "Kosovo", "tallinn": "Estonia", "riga": "Latvia", "vilnius": "Lithuania",
+        "kyiv": "Ukraine", "kiev": "Ukraine", "lviv": "Ukraine",
+        "chisinau": "Moldova", "chişinău": "Moldova", "valletta": "Malta", "nicosia": "Cyprus", "reykjavik": "Iceland",
+    }
+
+    for city, country in city_to_country.items():
+        if city in t:
+            return country
+
+    return fallback_country or ""
+
+
+def country_matches_selected(job_country: str, selected_countries: List[str]) -> bool:
+    if not selected_countries:
+        return True
+    if job_country in selected_countries:
+        return True
+    if job_country == "Remote/Global":
+        return True
+    return False
+
+
+def heuristic_score(job: Dict) -> Dict:
+    text = " ".join([
+        job.get("title", ""),
+        job.get("company", ""),
+        job.get("location", ""),
+        job.get("description", ""),
+        " ".join(job.get("tags", []) if isinstance(job.get("tags"), list) else []),
+        job.get("source", ""),
+    ]).lower()
+
+    relevance = 0
+    visa = 0
+    english_fit = 0
+
+    for k in ROLE_KEYWORDS:
+        if k in text:
+            relevance += 8
+
+    for k in INTL_KEYWORDS:
+        if k in text:
+            visa += 8
+
+    if any(x in text for x in ["english", "international", "global"]):
+        english_fit += 20
+        relevance += 5
+
+    if job.get("source") in {"EnglishJobs", "Relocate.me"}:
+        relevance += 10
+        english_fit += 15
+        visa += 10
+
+    if job.get("source") in {"RemoteOK", "WWR"}:
+        relevance += 8
+        english_fit += 20
+
+    if any(x in text for x in ["relocation", "visa", "sponsorship"]):
+        visa += 20
+
+    return {
+        "relevance": clamp(relevance),
+        "visa_likelihood": clamp(visa),
+        "english_fit": clamp(english_fit),
+        "reason": "Heuristic fallback scoring",
+    }
+
+
+def build_openai_client(api_key: str) -> Optional[OpenAI]:
+    key = (api_key or "").strip()
+    if not key or key == "PASTE_YOUR_OPENAI_KEY_HERE":
+        return None
+    try:
+        return OpenAI(api_key=key)
+    except Exception:
+        return None
+
+
+def analyze_with_openai(job: Dict, client: Optional[OpenAI]) -> Dict:
+    if client is None:
+        return heuristic_score(job)
+
+    prompt = f"""
+You are helping an Iraqi applicant with 10+ years in data management, good English, and a bachelor in computer studies.
+
+Evaluate this job for:
+1) relevance to the applicant's background
+2) likelihood it could support an English-speaking international applicant
+3) likelihood of visa/relocation friendliness based on the job text
+
+Return ONLY valid JSON with exactly these keys:
+{{
+  "relevance": 0-100,
+  "visa_likelihood": 0-100,
+  "english_fit": 0-100,
+  "reason": "short explanation"
+}}
+
+Job source: {job.get("source", "")}
+Country: {job.get("country", "")}
+Title: {job.get("title", "")}
+Company: {job.get("company", "")}
+Location: {job.get("location", "")}
+Description:
+{job.get("description", "")[:2500]}
+Tags: {", ".join(job.get("tags", [])) if isinstance(job.get("tags"), list) else ""}
+URL: {job.get("url", "")}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Return only JSON. No markdown."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"},
+        )
+        data = json.loads(response.choices[0].message.content)
+        return {
+            "relevance": clamp(data.get("relevance", 0)),
+            "visa_likelihood": clamp(data.get("visa_likelihood", 0)),
+            "english_fit": clamp(data.get("english_fit", 0)),
+            "reason": clean_text(data.get("reason", ""))[:300],
+        }
+    except Exception:
+        return heuristic_score(job)
+
+
+# ============================================================
+# SOURCES
+# ============================================================
+def fetch_serpapi_jobs(query: str, country: str, api_key: str) -> List[Dict]:
+    if not api_key or api_key == "PASTE_YOUR_SERPAPI_KEY_HERE":
+        return []
+
+    locations = SERPAPI_SEARCH_LOCATIONS.get(country, [country])
+    gl = SERPAPI_GL_MAP.get(country, "")
+    seen = set()
+    results: List[Dict] = []
+
+    for location in locations[:3]:
+        try:
+            params = {
+                "engine": "google_jobs",
+                "q": query,
+                "location": location,
+                "hl": "en",
+                "api_key": api_key,
+            }
+            if gl:
+                params["gl"] = gl
+
+            resp = requests.get("https://serpapi.com/search.json", params=params, timeout=30)
+            data = resp.json()
+            jobs = data.get("jobs_results", [])
+            st.write(f"SerpAPI {country} → {location}: {len(jobs)} jobs")
+
+            for job in jobs:
+                title = clean_text(job.get("title"))
+                company = clean_text(job.get("company_name"))
+                loc = clean_text(job.get("location"))
+                desc = clean_text(job.get("description", ""))
+                url = clean_text(job.get("apply_options", [{}])[0].get("link"))
+
+                key = (title, company, loc, url)
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                inferred_country = infer_country_from_location(loc, fallback_country=country)
+                if not inferred_country:
+                    inferred_country = country
+
+                results.append(normalize_job({
+                    "source": "SerpAPI",
+                    "country": inferred_country,
+                    "title": title,
+                    "company": company,
+                    "location": loc,
+                    "description": desc,
+                    "url": url,
+                    "tags": [],
+                }))
+        except Exception:
+            continue
+
+    return results
+
+
+def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> List[Dict]:
+    found = []
+    seen_urls = set()
+
+    for path in seeds:
+        url = urljoin(base, path)
+        try:
+            resp = SESSION.get(url, timeout=20)
+            if resp.status_code >= 400:
+                continue
+            html = resp.text
+        except requests.RequestException:
+            continue
+
+        soup = BeautifulSoup(html, "html.parser")
+        for a in soup.find_all("a", href=True):
+            title = clean_text(a.get_text(" ", strip=True))
+            href = urljoin(base, a["href"])
+            href_l = href.lower()
+
+            if len(title) < 8:
+                continue
+            if title.lower() in GENERIC_TITLE_SKIP:
+                continue
+            if not any(x in href_l for x in ["/job", "/jobs/", "/in/"]):
+                continue
+
+            context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
+            combined = f"{title} {context}".lower()
+            if not is_candidate_text(combined):
+                continue
+            if href in seen_urls:
+                continue
+            seen_urls.add(href)
+
+            found.append(normalize_job({
+                "source": "EnglishJobs",
+                "country": country,
+                "title": title,
+                "company": "",
+                "location": country,
+                "description": context[:2500],
+                "url": href,
+                "tags": [],
+            }))
+
+    return found
+
+
+def fetch_relocate_me() -> List[Dict]:
+    url = "https://relocate.me/international-jobs"
+    found = []
+    seen_urls = set()
+
+    try:
+        resp = SESSION.get(url, timeout=25)
+        if resp.status_code >= 400:
+            return []
+        soup = BeautifulSoup(resp.text, "html.parser")
+    except requests.RequestException:
+        return []
+
+    for a in soup.find_all("a", href=True):
+        title = clean_text(a.get_text(" ", strip=True))
+        href = urljoin(url, a["href"])
+        href_l = href.lower()
+
+        if len(title) < 8:
+            continue
+        if title.lower() in GENERIC_TITLE_SKIP:
+            continue
+        if "relocate.me" not in href_l:
+            continue
+
+        context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
+        combined = f"{title} {context}".lower()
+        if not is_candidate_text(combined):
+            continue
+        if href in seen_urls:
+            continue
+        seen_urls.add(href)
+
+        inferred_country = "Europe"
+        for c in ["Germany", "Netherlands", "United Kingdom", "Portugal", "Spain", "France", "Belgium", "Sweden", "Denmark", "Finland", "Ireland", "Cyprus", "Austria", "Switzerland", "Poland", "Italy", "Norway"]:
+            if c.lower() in combined:
+                inferred_country = c
+                break
+
+        found.append(normalize_job({
+            "source": "Relocate.me",
+            "country": inferred_country,
+            "title": title,
+            "company": "",
+            "location": inferred_country,
+            "description": context[:2500],
+            "url": href,
+            "tags": [],
+        }))
+
+    return found
+
+
+def fetch_remoteok() -> List[Dict]:
+    url = "https://remoteok.com/api"
+    found = []
+    try:
+        resp = SESSION.get(url, timeout=25)
+        data = resp.json()
+    except Exception:
+        return []
+
+    for item in data[1:]:
+        title = clean_text(item.get("position"))
+        company = clean_text(item.get("company"))
+        location = clean_text(item.get("location"))
+        desc = clean_text(item.get("description"))
+        apply_url = clean_text(item.get("apply_url") or item.get("url") or item.get("url_raw"))
+        tags = item.get("tags", []) if isinstance(item.get("tags", []), list) else []
+
+        combined = f"{title} {company} {location} {desc} {' '.join(tags)}".lower()
+        if not is_candidate_text(combined):
+            continue
+
+        found.append(normalize_job({
+            "source": "RemoteOK",
+            "country": "Remote/Global",
+            "title": title,
+            "company": company,
+            "location": location or "Remote",
+            "description": desc[:2500],
+            "url": apply_url,
+            "tags": tags,
+        }))
+
+    return found
+
+
+def fetch_wwr() -> List[Dict]:
+    url = "https://weworkremotely.com/remote-jobs.rss"
+    found = []
+    try:
+        resp = SESSION.get(url, timeout=25)
+        root = ET.fromstring(resp.text)
+    except Exception:
+        return []
+
+    for item in root.findall(".//item"):
+        title = clean_text(item.findtext("title"))
+        link = clean_text(item.findtext("link"))
+        desc = clean_text(item.findtext("description"))
+        combined = f"{title} {desc}".lower()
+        if not is_candidate_text(combined):
+            continue
+
+        found.append(normalize_job({
+            "source": "WWR",
+            "country": "Remote/Global",
+            "title": title,
+            "company": "",
+            "location": "Remote",
+            "description": desc[:2500],
+            "url": link,
+            "tags": [],
+        }))
+
+    return found
+
+
+def parse_custom_source(url: str) -> List[Dict]:
+    url = clean_text(url)
+    if not url:
+        return []
+
+    found = []
+    try:
+        resp = SESSION.get(url, timeout=25)
+        if resp.status_code >= 400:
+            return []
+        html = resp.text
+    except requests.RequestException:
+        return []
+
+    soup = BeautifulSoup(html, "html.parser")
+    base = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+    seen_urls = set()
+
+    for a in soup.find_all("a", href=True):
+        title = clean_text(a.get_text(" ", strip=True))
+        href = urljoin(base, a["href"])
+        href_l = href.lower()
+
+        if len(title) < 8:
+            continue
+        if title.lower() in GENERIC_TITLE_SKIP:
+            continue
+        if not any(x in href_l for x in ["job", "career", "vacanc", "opportun", "opening"]):
+            continue
+
+        context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
+        combined = f"{title} {context}".lower()
+        if not is_candidate_text(combined):
+            continue
+        if href in seen_urls:
+            continue
+        seen_urls.add(href)
+
+        found.append(normalize_job({
+            "source": "Custom",
+            "country": "Custom",
+            "title": title,
+            "company": "",
+            "location": "",
+            "description": context[:2500],
+            "url": href,
+            "tags": [],
+        }))
+
+    return found
+
+
+# ============================================================
+# STREAMLIT UI
+# ============================================================
+st.title("🧠 AI Job Intelligence Dashboard")
+st.caption("Hybrid job search: Google Jobs + English job boards + remote boards + custom sources")
+
+openai_client = build_openai_client(SAVED_OPENAI_KEY)
+
+st.sidebar.header("Sources")
+selected_sources = st.sidebar.multiselect(
+    "Choose job sources",
+    options=DEFAULT_SOURCES,
+    default=DEFAULT_SOURCES,
+)
+custom_source_url = st.sidebar.text_input(
+    "Add custom source URL",
+    placeholder="https://example.com/jobs",
+    help="Use this for extra websites only.",
+)
+
+st.sidebar.divider()
+st.sidebar.header("Filters")
+min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
+min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
+min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
+only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
+
+left, right = st.columns([2, 1])
+with left:
+    st.subheader("Search")
+    query = st.text_input("Search keywords", ROLE_QUERY_DEFAULT)
+    selected_countries = st.multiselect(
+        "Choose countries",
+        options=DEFAULT_COUNTRIES,
+        default=["Canada", "United Kingdom", "Ireland", "Netherlands"],
+    )
+    custom_country = st.text_input(
+        "Add custom country",
+        placeholder="Example: Germany, France, Sweden, Australia",
+    )
+    search_clicked = st.button("🔍 Search Jobs")
+
+with right:
+    st.subheader("How it works")
+    st.write("Selected countries are expanded into city searches behind the scenes.")
+    st.write("Job locations like Toronto are mapped back to Canada automatically.")
+    st.write("Custom source URLs belong in the sidebar.")
+
+countries = list(selected_countries)
+if custom_country.strip():
+    countries.append(custom_country.strip())
+countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
+
+if any(country in ENGLISH_SPEAKING_COUNTRIES for country in countries):
+    if "SerpAPI Google Jobs" not in selected_sources:
+        selected_sources = list(selected_sources) + ["SerpAPI Google Jobs"]
+    st.success("SerpAPI automatically enabled because you selected at least one English-speaking country.")
+
+st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
+
+if search_clicked:
+    all_jobs: List[Dict] = []
+    seen_keys = set()
+
+    # 1) SerpAPI Google Jobs
+    if "SerpAPI Google Jobs" in selected_sources:
+        if not SAVED_SERPAPI_KEY.strip() or SAVED_SERPAPI_KEY.startswith("PASTE_YOUR_SERPAPI_KEY_HERE"):
+            st.warning("SerpAPI key is missing in the script. Google Jobs will be skipped.")
+        else:
+            for country in countries:
+                st.write(f"Searching SerpAPI: {country}")
+                serp_jobs = fetch_serpapi_jobs(query, country, SAVED_SERPAPI_KEY.strip())
+                for job in serp_jobs:
+                    job_country = infer_country_from_location(job.get("location", ""), fallback_country=country)
+                    if not country_matches_selected(job_country, countries):
+                        continue
+                    job["country"] = job_country or country
+                    key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+                    if key in seen_keys:
+                        continue
+                    seen_keys.add(key)
+                    all_jobs.append(job)
+
+    # 2) EnglishJobs network
+    if "EnglishJobs.de Network" in selected_sources:
+        for site in ENGLISHJOBS_SITES:
+            if site["country"] not in countries:
+                continue
+            st.write(f"Searching EnglishJobs: {site['country']}")
+            jobs = scrape_html_jobs_from_site(site["country"], site["base"], site["seeds"])
+            for job in jobs:
+                key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                all_jobs.append(job)
+
+    # 3) Relocate.me
+    if "Relocate.me" in selected_sources:
+        st.write("Searching Relocate.me")
+        jobs = fetch_relocate_me()
+        for job in jobs:
+            inferred = infer_country_from_location(job.get("location", ""), fallback_country=job.get("country", ""))
+            if countries and inferred not in countries and inferred not in {"Europe", "Remote/Global"} and job.get("country") not in countries:
+                continue
+            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_jobs.append(job)
+
+    # 4) RemoteOK
+    if "RemoteOK" in selected_sources:
+        st.write("Searching RemoteOK")
+        jobs = fetch_remoteok()
+        for job in jobs:
+            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_jobs.append(job)
+
+    # 5) We Work Remotely
+    if "We Work Remotely" in selected_sources:
+        st.write("Searching We Work Remotely")
+        jobs = fetch_wwr()
+        for job in jobs:
+            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_jobs.append(job)
+
+    # 6) Custom source URL
+    if custom_source_url.strip():
+        st.write("Searching custom source URL")
+        jobs = parse_custom_source(custom_source_url.strip())
+        for job in jobs:
+            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_jobs.append(job)
+
+    # Score jobs
+    rows = []
+    progress = st.progress(0)
+    total = max(len(all_jobs), 1)
+
+    for idx, job in enumerate(all_jobs, start=1):
+        progress.progress(min(idx / total, 1.0))
+        ai = analyze_with_openai(job, openai_client)
+        rows.append({
+            "Source": job.get("source", ""),
+            "Country": job.get("country", ""),
+            "Title": job.get("title", ""),
+            "Company": job.get("company", ""),
+            "Location": job.get("location", ""),
+            "Relevance": ai.get("relevance", 0),
+            "Visa_Likelihood": ai.get("visa_likelihood", 0),
+            "English_Fit": ai.get("english_fit", 0),
+            "Reason": ai.get("reason", ""),
+            "URL": job.get("url", ""),
+            "Description": job.get("description", "")[:3000],
+        })
+
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        if min_visa > 0 or min_relevance > 0 or min_english > 0:
+            df = df[
+                (df["Visa_Likelihood"] >= min_visa) &
+                (df["Relevance"] >= min_relevance) &
+                (df["English_Fit"] >= min_english)
+            ]
+        if only_high_fit:
+            df = df[(df["Visa_Likelihood"] >= 60) & (df["Relevance"] >= 60) & (df["English_Fit"] >= 60)]
+        df = df.sort_values(by=["Visa_Likelihood", "Relevance", "English_Fit"], ascending=[False, False, False])
+
+    st.session_state.results_df = df
+
+# ============================================================
+# DISPLAY
+# ============================================================
+if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
+    df = st.session_state.results_df
+
+    st.subheader("Results")
+    st.write(f"Jobs found: {len(df)}")
+
+    if not df.empty:
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.metric("Avg Visa Likelihood", f"{df['Visa_Likelihood'].mean():.1f}")
+        with c2:
+            st.metric("Avg Relevance", f"{df['Relevance'].mean():.1f}")
+        with c3:
+            st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
+
+        st.dataframe(
+            df[["Source", "Country", "Title", "Company", "Location", "Relevance", "Visa_Likelihood", "English_Fit", "Reason", "URL"]],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        st.subheader("Clickable job links")
+        for _, row in df.iterrows():
+            st.markdown(
+                f"""
+**{row['Title']}**  
+{row['Company']} — {row['Location']}  
+Source: {row['Source']} | Country: {row['Country']}  
+Visa: {row['Visa_Likelihood']} | Relevance: {row['Relevance']} | English: {row['English_Fit']}  
+👉 {row['URL']}
+"""
+            )
+
+        csv = df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "Download results as CSV",
+            data=csv,
+            file_name="job_results.csv",
+            mime="text/csv",
+        )
+
+        try:
+            from io import BytesIO
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Jobs")
+            st.download_button(
+                "Download results as Excel",
+                data=output.getvalue(),
+                file_name="job_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        except Exception:
+            pass
+    else:
+        st.warning("No jobs matched your filters.")
+else:
+    st.info("Choose sources and countries, then click Search Jobs.")
