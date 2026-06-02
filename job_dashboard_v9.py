@@ -660,6 +660,25 @@ def parse_custom_source(url: str) -> List[Dict]:
 # VERSION 10 - UN CAREERS
 # ==========================================
 def fetch_un_jobs():
+    jobs = []
+
+    try:
+        url = "https://careers.un.org"
+
+        jobs.append({
+            "source": "UN Careers",
+            "country": "International",
+            "title": "Visit UN Careers",
+            "company": "United Nations",
+            "location": "Various",
+            "description": "Browse current UN vacancies",
+            "url": url,
+            "tags": ["UN"],
+        })
+    except:
+        pass
+
+    return jobs
 def fetch_undp_jobs():
     jobs = []
 
@@ -681,26 +700,6 @@ def fetch_undp_jobs():
         pass
 
     return jobs    
-    jobs = []
-
-    try:
-        url = "https://careers.un.org"
-
-        jobs.append({
-            "source": "UN Careers",
-            "country": "International",
-            "title": "Visit UN Careers",
-            "company": "United Nations",
-            "location": "Various",
-            "description": "Browse current UN vacancies",
-            "url": url,
-            "tags": ["UN"],
-        })
-    except:
-        pass
-
-    return jobs
-
 # ============================================================
 # STREAMLIT UI
 # ============================================================
