@@ -43,6 +43,18 @@ DEFAULT_SOURCES = [
     "Relocate.me",
     "RemoteOK",
     "We Work Remotely",
+
+    # Version 10
+    "EURES",
+    "UN Careers",
+    "UNDP",
+    "UNICEF",
+    "UNHCR",
+    "WFP",
+    "WHO",
+    "IOM",
+    "World Bank",
+    "EBRD",
 ]
 
 ENGLISH_SPEAKING_COUNTRIES = {
