@@ -868,8 +868,28 @@ if search_clicked:
 
             seen_keys.add(key)
             all_jobs.append(job)
+         # 7) UNDP
+    if "UNDP" in selected_sources:
+        st.write("Searching UNDP")
 
-    # 7) Custom source URL
+        jobs = fetch_undp_jobs()
+
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+
+            if key in seen_keys:
+                continue
+
+            seen_keys.add(key)
+            all_jobs.append(job)       
+
+    # 8) Custom source URL
     if custom_source_url.strip():
         st.write("Searching custom source URL")
 
