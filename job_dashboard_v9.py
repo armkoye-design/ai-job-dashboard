@@ -939,8 +939,8 @@ if search_clicked:
     st.write("Collected jobs:", len(all_jobs))
     st.write("Scored rows:", len(rows))
     df = pd.DataFrame(rows)
-    #if not df.empty:
-        #df = df[df["Query_Match"] >= 60]
+    if not df.empty:
+        df = df[df["Query_Match"] >= 60]
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
             df = df[
