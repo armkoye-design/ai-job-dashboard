@@ -939,7 +939,7 @@ if search_clicked:
 
     df = pd.DataFrame(rows)
     if not df.empty:
-    df = df[df["Query_Match"] >= 60]
+        df = df[df["Query_Match"] >= 60]
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
             df = df[
