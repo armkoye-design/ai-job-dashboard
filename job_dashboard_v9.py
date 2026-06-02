@@ -680,12 +680,6 @@ def fetch_un_jobs():
 
     return jobs
 
-
-# ============================================================
-# STREAMLIT UI
-# ============================================================
-st.title("🧠 AI Job Intelligence Dashboard")
-
 # ============================================================
 # STREAMLIT UI
 # ============================================================
@@ -835,37 +829,47 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
     # 6) UN Careers
-if "UN Careers" in selected_sources:
-    st.write("Searching UN Careers")
+    if "UN Careers" in selected_sources:
+        st.write("Searching UN Careers")
 
-    jobs = fetch_un_jobs()
+        jobs = fetch_un_jobs()
 
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
 
-        if key in seen_keys:
-            continue
+            if key in seen_keys:
+                continue
 
-        seen_keys.add(key)
-        all_jobs.append(job)
+            seen_keys.add(key)
+            all_jobs.append(job)
 
     # 7) Custom source URL
     if custom_source_url.strip():
         st.write("Searching custom source URL")
+
         jobs = parse_custom_source(custom_source_url.strip())
+
         for job in jobs:
-            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+
             if key in seen_keys:
                 continue
+
             seen_keys.add(key)
             all_jobs.append(job)
-
+            
     # Score jobs
     rows = []
     progress = st.progress(0)
