@@ -680,6 +680,22 @@ custom_source_url = st.sidebar.text_input(
 
 st.sidebar.divider()
 st.sidebar.header("Filters")
+organization_types = st.sidebar.multiselect(
+    "Organization Type",
+    [
+        "Private Sector",
+        "UN System",
+        "International NGO",
+        "Development Bank",
+        "European Union",
+    ],
+    default=[
+        "Private Sector",
+        "UN System",
+        "International NGO",
+        "Development Bank",
+    ],
+)
 min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
 min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
 min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
