@@ -834,8 +834,28 @@ if search_clicked:
                 continue
             seen_keys.add(key)
             all_jobs.append(job)
+    # 6) UN Careers
+if "UN Careers" in selected_sources:
+    st.write("Searching UN Careers")
 
-    # 6) Custom source URL
+    jobs = fetch_un_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+    # 7) Custom source URL
     if custom_source_url.strip():
         st.write("Searching custom source URL")
         jobs = parse_custom_source(custom_source_url.strip())
