@@ -931,7 +931,7 @@ if search_clicked:
             "Relevance": ai.get("relevance", 0),
             "Visa_Likelihood": ai.get("visa_likelihood", 0),
             "English_Fit": ai.get("english_fit", 0),
-            "Query_Match": ai.get("query_match", 0),
+            "Query_Match": ai.get("query_match", -1),
             "Reason": ai.get("reason", ""),
             "URL": job.get("url", ""),
             "Description": job.get("description", "")[:3000],
@@ -973,7 +973,7 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
 
         st.dataframe(
-            df[["Source", "Country", "Title", "Company", "Location", "Relevance", "Visa_Likelihood", "English_Fit", "Reason", "URL"]],
+            df[["Source", "Country", "Title", "Company", "Location", "Relevance", "Visa_Likelihood", "English_Fit", "Query_Match", "Reason", "URL"]],
             use_container_width=True,
             hide_index=True,
         )
