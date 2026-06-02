@@ -311,6 +311,7 @@ def heuristic_score(job: Dict) -> Dict:
         "relevance": clamp(relevance),
         "visa_likelihood": clamp(visa),
         "english_fit": clamp(english_fit),
+        "query_match": clamp(relevance),
         "reason": "Heuristic fallback scoring",
     }
 
@@ -325,23 +326,28 @@ def build_openai_client(api_key: str) -> Optional[OpenAI]:
         return None
 
 
-def analyze_with_openai(job: Dict, client: Optional[OpenAI]) -> Dict:
+def analyze_with_openai(job: Dict, client: Optional[OpenAI], search_query: str) -> Dict:
     if client is None:
         return heuristic_score(job)
 
-    prompt = f"""
+prompt = f"""
 You are helping an Iraqi applicant with 10+ years in data management, good English, and a bachelor in computer studies.
+
+User Search Query:
+{search_query}
 
 Evaluate this job for:
 1) relevance to the applicant's background
 2) likelihood it could support an English-speaking international applicant
-3) likelihood of visa/relocation friendliness based on the job text
+3) likelihood of visa/relocation friendliness
+4) how well the job matches the user's search query, including similar job titles and related roles
 
 Return ONLY valid JSON with exactly these keys:
 {{
   "relevance": 0-100,
   "visa_likelihood": 0-100,
   "english_fit": 0-100,
+  "query_match": 0-100,
   "reason": "short explanation"
 }}
 
@@ -352,8 +358,6 @@ Company: {job.get("company", "")}
 Location: {job.get("location", "")}
 Description:
 {job.get("description", "")[:2500]}
-Tags: {", ".join(job.get("tags", [])) if isinstance(job.get("tags"), list) else ""}
-URL: {job.get("url", "")}
 """
 
     try:
@@ -917,7 +921,7 @@ if search_clicked:
 
     for idx, job in enumerate(all_jobs, start=1):
         progress.progress(min(idx / total, 1.0))
-        ai = analyze_with_openai(job, openai_client)
+        ai = analyze_with_openai(job, openai_client, query)
         rows.append({
             "Source": job.get("source", ""),
             "Country": job.get("country", ""),
@@ -927,12 +931,15 @@ if search_clicked:
             "Relevance": ai.get("relevance", 0),
             "Visa_Likelihood": ai.get("visa_likelihood", 0),
             "English_Fit": ai.get("english_fit", 0),
+            "Query_Match": ai.get("query_match", 0),
             "Reason": ai.get("reason", ""),
             "URL": job.get("url", ""),
             "Description": job.get("description", "")[:3000],
         })
 
     df = pd.DataFrame(rows)
+    if not df.empty:
+    df = df[df["Query_Match"] >= 60]
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
             df = df[
