@@ -330,7 +330,7 @@ def analyze_with_openai(job: Dict, client: Optional[OpenAI], search_query: str) 
     if client is None:
         return heuristic_score(job)
 
-prompt = f"""
+    prompt = f"""
 You are helping an Iraqi applicant with 10+ years in data management, good English, and a bachelor in computer studies.
 
 User Search Query:
