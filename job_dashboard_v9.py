@@ -951,11 +951,11 @@ if search_clicked:
     rows = []
     progress = st.progress(0)
 
-if not include_remote_jobs:
-    all_jobs = [
-        job for job in all_jobs
-        if job.get("country") != "Remote/Global"
-    ]
+    if not include_remote_jobs:
+        all_jobs = [
+            job for job in all_jobs
+            if job.get("country") != "Remote/Global"
+        ]
 
 total = max(len(all_jobs), 1)
 
