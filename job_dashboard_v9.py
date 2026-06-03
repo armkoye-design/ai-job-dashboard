@@ -340,7 +340,13 @@ Evaluate this job for:
 1) relevance to the applicant's background
 2) likelihood it could support an English-speaking international applicant
 3) likelihood of visa/relocation friendliness
-4) how well the job matches the user's search query, including similar job titles and related roles
+4) how well the job matches the user's search query
+
+Scoring rules for query_match:
+- 90-100 = direct match (Data Analyst, BI Analyst, Reporting Analyst)
+- 70-89 = closely related (Power BI Developer, Business Intelligence Developer, Analytics Engineer)
+- 40-69 = partially related (Data Engineer, Database Administrator, MIS Officer)
+- 0-39 = unrelated jobs such as Teacher, Nurse, Marketing, Sales, Receptionist, HR, Finance, Legal
 
 Return ONLY valid JSON with exactly these keys:
 {{
@@ -375,6 +381,7 @@ Description:
             "relevance": clamp(data.get("relevance", 0)),
             "visa_likelihood": clamp(data.get("visa_likelihood", 0)),
             "english_fit": clamp(data.get("english_fit", 0)),
+            "query_match": clamp(data.get("query_match", 0)),
             "reason": clean_text(data.get("reason", ""))[:300],
         }
     except Exception:
