@@ -384,7 +384,8 @@ Description:
             "query_match": clamp(data.get("query_match", 0)),
             "reason": clean_text(data.get("reason", ""))[:300],
         }
-    except Exception:
+    except Exception as e:
+        st.error(f"OpenAI Error: {e}")
         return heuristic_score(job)
 
 
@@ -718,6 +719,8 @@ st.title("🧠 AI Job Intelligence Dashboard")
 st.caption("Hybrid job search: Google Jobs + English job boards + remote boards + custom sources")
 
 openai_client = build_openai_client(SAVED_OPENAI_KEY)
+st.write("OpenAI client exists:", openai_client is not None)
+st.write("OpenAI key loaded:", bool(SAVED_OPENAI_KEY))
 
 st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
