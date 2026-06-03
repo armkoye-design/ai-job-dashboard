@@ -979,18 +979,18 @@ if search_clicked:
         })
         
     remote_count = sum(
-    1 for job in all_jobs
-    if job.get("country") == "Remote/Global"
+        1 for job in all_jobs
+        if job.get("country") == "Remote/Global"
     )
 
     st.write("Collected jobs:", len(all_jobs))
     st.write("Remote jobs found:", remote_count)
 
     if not include_remote_jobs:
-    all_jobs = [
-        job for job in all_jobs
-        if job.get("country") != "Remote/Global"
-    ]
+        all_jobs = [
+            job for job in all_jobs
+            if job.get("country") != "Remote/Global"
+        ]
     df = pd.DataFrame(rows)
     st.write("Max Query Match:", df["Query_Match"].max())
     st.write("Average Query Match:", df["Query_Match"].mean())
