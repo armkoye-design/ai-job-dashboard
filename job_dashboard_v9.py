@@ -905,7 +905,7 @@ if search_clicked:
 
             seen_keys.add(key)
             all_jobs.append(job)
-         # 7) UNDP
+    # 7) UNDP
     if "UNDP" in selected_sources:
         st.write("Searching UNDP")
 
@@ -947,13 +947,13 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
             
-    # Score jobs
-rows = []
-progress = st.progress(0)
+     # Score jobs
+     rows = []
+     progress = st.progress(0)
 
-remote_count = sum(
-    1 for job in all_jobs
-    if job.get("country") == "Remote/Global"
+     remote_count = sum(
+         1 for job in all_jobs
+         if job.get("country") == "Remote/Global"
 )
 
 st.write("Collected jobs:", len(all_jobs))
@@ -1009,6 +1009,9 @@ if not df.empty:
     df = df.sort_values(by=["Visa_Likelihood", "Relevance", "English_Fit"], ascending=[False, False, False])
 
 st.session_state.results_df = df
+
+
+      
 # ============================================================
 # DISPLAY
 # ============================================================
