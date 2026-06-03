@@ -775,6 +775,10 @@ min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
 min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
 min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
 only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
+include_remote_jobs = st.sidebar.checkbox(
+    "Include Remote Jobs",
+    value=False
+)
 
 left, right = st.columns([2, 1])
 with left:
@@ -948,6 +952,11 @@ if search_clicked:
     progress = st.progress(0)
     total = max(len(all_jobs), 1)
 
+    if not include_remote_jobs:
+    all_jobs = [
+        job for job in all_jobs
+        if job.get("country") != "Remote/Global"
+    ]
     for idx, job in enumerate(all_jobs, start=1):
         progress.progress(min(idx / total, 1.0))
         score = query_match_score(job, query)
@@ -968,6 +977,12 @@ if search_clicked:
             "URL": job.get("url", ""),
             "Description": job.get("description", "")[:3000],
         })
+    remote_count = sum(
+    1 for job in all_jobs
+    if job.get("country") == "Remote/Global"
+)
+
+    st.write("Remote jobs:", remote_count)
     st.write("Collected jobs:", len(all_jobs))
     st.write("Scored rows:", len(rows))
     df = pd.DataFrame(rows)
