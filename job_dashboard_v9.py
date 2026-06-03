@@ -982,6 +982,13 @@ if search_clicked:
         })
     
     df = pd.DataFrame(rows)
+    st.write("Rows before Query filter:", len(df))
+
+    if not df.empty:
+        st.dataframe(
+            df[["Title", "Country", "Query_Match"]].head(20),
+            use_container_width=True
+        )
     
     st.write("Max Query Match:", df["Query_Match"].max())
     st.write("Average Query Match:", df["Query_Match"].mean())
