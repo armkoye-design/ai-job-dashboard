@@ -513,27 +513,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 continue
             seen_urls.add(href)
             
-            bad_terms = [
-                "blog", "stories", "story", "visa", "immigration", "salaries",
-                "salary", "cost of living", "working abroad", "read our blog",
-                "expat", "money & taxes", "about", "contact", "newsletter"
-            ]
-            
-            good_job_terms = [
-                "job", "jobs", "analyst", "developer", "engineer", "manager",
-                "specialist", "consultant", "officer", "coordinator", "director",
-                "lead", "head", "scientist", "administrator"
-            ]
-            
             title_l = title.lower()
-            
-            if any(bad in title_l for bad in bad_terms):
-                continue
-            
-            if not any(good in title_l for good in good_job_terms):
-                continue
-            title_l = title.lower()
-            
+
             bad_terms = [
                 "blog",
                 "stories",
@@ -576,6 +557,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             if not any(term in title_l for term in good_job_terms):
                 continue
+            
+            
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
@@ -1064,6 +1047,10 @@ if search_clicked:
     st.write("Average Query Match:", df["Query_Match"].mean())
     
     if not df.empty:
+        st.write(
+        df[df["Title"].str.contains("analyst", case=False, na=False)]
+        [["Title", "Country"]]
+    )
         df = df[df["Query_Match"] >= 25]
     
     if not df.empty:
