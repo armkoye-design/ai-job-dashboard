@@ -948,67 +948,67 @@ if search_clicked:
             all_jobs.append(job)
             
     # Score jobs
-    rows = []
-    progress = st.progress(0)
-    total = max(len(all_jobs), 1)
+rows = []
+progress = st.progress(0)
 
-    if not include_remote_jobs:
+remote_count = sum(
+    1 for job in all_jobs
+    if job.get("country") == "Remote/Global"
+)
+
+st.write("Collected jobs:", len(all_jobs))
+st.write("Remote jobs found:", remote_count)
+
+if not include_remote_jobs:
     all_jobs = [
         job for job in all_jobs
         if job.get("country") != "Remote/Global"
     ]
-    for idx, job in enumerate(all_jobs, start=1):
-        progress.progress(min(idx / total, 1.0))
-        score = query_match_score(job, query)
 
-        ai = heuristic_score(job)
-        ai["query_match"] = score
-        rows.append({
-            "Source": job.get("source", ""),
-            "Country": job.get("country", ""),
-            "Title": job.get("title", ""),
-            "Company": job.get("company", ""),
-            "Location": job.get("location", ""),
-            "Relevance": ai.get("relevance", 0),
-            "Visa_Likelihood": ai.get("visa_likelihood", 0),
-            "English_Fit": ai.get("english_fit", 0),
-            "Query_Match": ai.get("query_match", 0),
-            "Reason": ai.get("reason", ""),
-            "URL": job.get("url", ""),
-            "Description": job.get("description", "")[:3000],
-        })
-        
-    remote_count = sum(
-        1 for job in all_jobs
-        if job.get("country") == "Remote/Global"
-    )
+total = max(len(all_jobs), 1)
 
-    st.write("Collected jobs:", len(all_jobs))
-    st.write("Remote jobs found:", remote_count)
+for idx, job in enumerate(all_jobs, start=1):
+    progress.progress(min(idx / total, 1.0))
+    score = query_match_score(job, query)
 
-    if not include_remote_jobs:
-        all_jobs = [
-            job for job in all_jobs
-            if job.get("country") != "Remote/Global"
+    ai = heuristic_score(job)
+    ai["query_match"] = score
+
+    rows.append({
+        "Source": job.get("source", ""),
+        "Country": job.get("country", ""),
+        "Title": job.get("title", ""),
+        "Company": job.get("company", ""),
+        "Location": job.get("location", ""),
+        "Relevance": ai.get("relevance", 0),
+        "Visa_Likelihood": ai.get("visa_likelihood", 0),
+        "English_Fit": ai.get("english_fit", 0),
+        "Query_Match": ai.get("query_match", 0),
+        "Reason": ai.get("reason", ""),
+        "URL": job.get("url", ""),
+        "Description": job.get("description", "")[:3000],
+    })
+
+df = pd.DataFrame(rows)
+
+st.write("Max Query Match:", df["Query_Match"].max())
+st.write("Average Query Match:", df["Query_Match"].mean())
+
+if not df.empty:
+    df = df[df["Query_Match"] >= 25]
+
+if not df.empty:
+    if min_visa > 0 or min_relevance > 0 or min_english > 0:
+        df = df[
+            (df["Visa_Likelihood"] >= min_visa) &
+            (df["Relevance"] >= min_relevance) &
+            (df["English_Fit"] >= min_english)
         ]
-    df = pd.DataFrame(rows)
-    st.write("Max Query Match:", df["Query_Match"].max())
-    st.write("Average Query Match:", df["Query_Match"].mean())
-    if not df.empty:
-        df = df[df["Query_Match"] >= 25]
-    if not df.empty:
-        if min_visa > 0 or min_relevance > 0 or min_english > 0:
-            df = df[
-                (df["Visa_Likelihood"] >= min_visa) &
-                (df["Relevance"] >= min_relevance) &
-                (df["English_Fit"] >= min_english)
-            ]
-        if only_high_fit:
-            df = df[(df["Visa_Likelihood"] >= 60) & (df["Relevance"] >= 60) & (df["English_Fit"] >= 60)]
-        df = df.sort_values(by=["Visa_Likelihood", "Relevance", "English_Fit"], ascending=[False, False, False])
+    if only_high_fit:
+        df = df[(df["Visa_Likelihood"] >= 60) & (df["Relevance"] >= 60) & (df["English_Fit"] >= 60)]
+    df = df.sort_values(by=["Visa_Likelihood", "Relevance", "English_Fit"], ascending=[False, False, False])
 
-    st.session_state.results_df = df
-
+st.session_state.results_df = df
 # ============================================================
 # DISPLAY
 # ============================================================
