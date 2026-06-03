@@ -279,23 +279,21 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     score = 0
 
-    # Exact title match
     if query == title:
         return 100
 
-    # Full query inside title
     if query in title:
         score += 80
 
-    # Individual words
+    matches = 0
+
     for word in query_words:
         if word in title:
-            score += 25
+            matches += 1
 
-    # Prevent scores >100
-    score = min(score, 100)
+    score += matches * 20
 
-    return score
+    return min(score, 100)
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
@@ -976,7 +974,7 @@ if search_clicked:
     st.write("Max Query Match:", df["Query_Match"].max())
     st.write("Average Query Match:", df["Query_Match"].mean())
     if not df.empty:
-        df = df[df["Query_Match"] >= 50]
+        df = df[df["Query_Match"] >= 25]
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
             df = df[
