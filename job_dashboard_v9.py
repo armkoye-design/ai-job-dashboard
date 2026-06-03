@@ -1,5 +1,6 @@
 import json
 import re
+from difflib import SequenceMatcher
 from typing import Dict, List, Optional
 from urllib.parse import urljoin, urlparse
 from xml.etree import ElementTree as ET
@@ -269,29 +270,76 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     return False
     
 def query_match_score(job: Dict, search_query: str) -> int:
-    title = job.get("title", "").lower()
-    query = search_query.lower().strip()
+    title = re.sub(r"[^a-z0-9+&/-]+", " ", (job.get("title", "") or "").lower())
+    title = re.sub(r"\s+", " ", title).strip()
 
-    if not query:
-        return 100
+    query = re.sub(r"[^a-z0-9+&/-]+", " ", (search_query or "").lower())
+    query = re.sub(r"\s+", " ", query).strip()
 
-    query_words = [w for w in query.split() if len(w) > 2]
-
-    score = 0
+    if not query or not title:
+        return 0
 
     if query == title:
         return 100
 
     if query in title:
-        score += 80
+        return 95
 
-    matches = 0
+    q_tokens = [t for t in query.split() if len(t) > 1]
+    t_tokens = [t for t in title.split() if len(t) > 1]
 
-    for word in query_words:
-        if word in title:
-            matches += 1
+    if not q_tokens or not t_tokens:
+        return 0
 
-    score += matches * 20
+    # Small title-only synonym groups, not description-based.
+    synonym_groups = [
+        {"data", "analytics", "analysis", "analyst", "analytical"},
+        {"business", "intelligence", "bi"},
+        {"report", "reporting", "reports"},
+        {"information", "knowledge"},
+        {"monitoring", "evaluation", "m&e"},
+        {"management", "manager"},
+    ]
+
+    def same_group(a: str, b: str) -> bool:
+        for group in synonym_groups:
+            if a in group and b in group:
+                return True
+        return False
+
+    token_scores = []
+    for qt in q_tokens:
+        best = 0.0
+        for tt in t_tokens:
+            if qt == tt:
+                best = max(best, 1.0)
+            elif qt in tt or tt in qt:
+                best = max(best, 0.90)
+            elif same_group(qt, tt):
+                best = max(best, 0.80)
+            else:
+                best = max(best, SequenceMatcher(None, qt, tt).ratio())
+        token_scores.append(best)
+
+    avg_token_score = sum(token_scores) / len(token_scores)
+    phrase_score = SequenceMatcher(None, query, title).ratio()
+
+    overlap = sum(
+        1 for qt in q_tokens
+        if any(qt == tt or qt in tt or tt in qt or same_group(qt, tt) for tt in t_tokens)
+    )
+    overlap_ratio = overlap / len(q_tokens)
+
+    score = int(max(avg_token_score, phrase_score) * 100)
+
+    if overlap_ratio == 1:
+        score = max(score, 90)
+    elif overlap_ratio >= 0.75:
+        score = max(score, 75)
+    elif overlap_ratio >= 0.50:
+        score = max(score, 50)
+    elif overlap_ratio >= 0.25:
+        score = max(score, 25)
 
     return min(score, 100)
 
