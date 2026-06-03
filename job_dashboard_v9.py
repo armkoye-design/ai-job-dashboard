@@ -1,6 +1,5 @@
 import json
 import re
-from difflib import SequenceMatcher
 from typing import Dict, List, Optional
 from urllib.parse import urljoin, urlparse
 from xml.etree import ElementTree as ET
@@ -270,14 +269,17 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     return False
     
 def query_match_score(job: Dict, search_query: str) -> int:
-    title = re.sub(r"[^a-z0-9+&/-]+", " ", (job.get("title", "") or "").lower())
-    title = re.sub(r"\s+", " ", title).strip()
+    title = (job.get("title", "") or "").lower().strip()
+    query = (search_query or "").lower().strip()
 
-    query = re.sub(r"[^a-z0-9+&/-]+", " ", (search_query or "").lower())
-    query = re.sub(r"\s+", " ", query).strip()
-
-    if not query or not title:
+    if not title or not query:
         return 0
+
+    # remove punctuation noise
+    title = re.sub(r"[^a-z0-9\s]+", " ", title)
+    query = re.sub(r"[^a-z0-9\s]+", " ", query)
+    title = re.sub(r"\s+", " ", title).strip()
+    query = re.sub(r"\s+", " ", query).strip()
 
     if query == title:
         return 100
@@ -285,63 +287,20 @@ def query_match_score(job: Dict, search_query: str) -> int:
     if query in title:
         return 95
 
-    q_tokens = [t for t in query.split() if len(t) > 1]
-    t_tokens = [t for t in title.split() if len(t) > 1]
-
-    if not q_tokens or not t_tokens:
+    query_words = [w for w in query.split() if len(w) > 2]
+    if not query_words:
         return 0
 
-    # Small title-only synonym groups, not description-based.
-    synonym_groups = [
-        {"data", "analytics", "analysis", "analyst", "analytical"},
-        {"business", "intelligence", "bi"},
-        {"report", "reporting", "reports"},
-        {"information", "knowledge"},
-        {"monitoring", "evaluation", "m&e"},
-        {"management", "manager"},
-    ]
+    matches = sum(1 for w in query_words if w in title)
 
-    def same_group(a: str, b: str) -> bool:
-        for group in synonym_groups:
-            if a in group and b in group:
-                return True
-        return False
+    if matches == len(query_words):
+        return 90
+    if matches >= max(1, len(query_words) - 1):
+        return 70
+    if matches >= 1:
+        return 25
 
-    token_scores = []
-    for qt in q_tokens:
-        best = 0.0
-        for tt in t_tokens:
-            if qt == tt:
-                best = max(best, 1.0)
-            elif qt in tt or tt in qt:
-                best = max(best, 0.90)
-            elif same_group(qt, tt):
-                best = max(best, 0.80)
-            else:
-                best = max(best, SequenceMatcher(None, qt, tt).ratio())
-        token_scores.append(best)
-
-    avg_token_score = sum(token_scores) / len(token_scores)
-    phrase_score = SequenceMatcher(None, query, title).ratio()
-
-    overlap = sum(
-        1 for qt in q_tokens
-        if any(qt == tt or qt in tt or tt in qt or same_group(qt, tt) for tt in t_tokens)
-    )
-    overlap_ratio = overlap / len(q_tokens)
-
-    score = int(max(avg_token_score, phrase_score) * 100)
-
-    if overlap_ratio == 1:
-        score = max(score, 90)
-    elif overlap_ratio >= 0.75:
-        score = max(score, 75)
-    elif overlap_ratio >= 0.50:
-        score = max(score, 50)
-    elif overlap_ratio >= 0.25:
-        score = max(score, 25)
-
-    return min(score, 100)
+    return 0
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
@@ -553,7 +512,27 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if href in seen_urls:
                 continue
             seen_urls.add(href)
-
+            
+            bad_terms = [
+                "blog", "stories", "story", "visa", "immigration", "salaries",
+                "salary", "cost of living", "working abroad", "read our blog",
+                "expat", "money & taxes", "about", "contact", "newsletter"
+            ]
+            
+            good_job_terms = [
+                "job", "jobs", "analyst", "developer", "engineer", "manager",
+                "specialist", "consultant", "officer", "coordinator", "director",
+                "lead", "head", "scientist", "administrator"
+            ]
+            
+            title_l = title.lower()
+            
+            if any(bad in title_l for bad in bad_terms):
+                continue
+            
+            if not any(good in title_l for good in good_job_terms):
+                continue
+            
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
