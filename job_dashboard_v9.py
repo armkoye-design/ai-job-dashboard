@@ -267,7 +267,35 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     if job_country == "Remote/Global":
         return True
     return False
+    
+def query_match_score(job: Dict, search_query: str) -> int:
+    title = job.get("title", "").lower()
+    query = search_query.lower().strip()
 
+    if not query:
+        return 100
+
+    query_words = [w for w in query.split() if len(w) > 2]
+
+    score = 0
+
+    # Exact title match
+    if query == title:
+        return 100
+
+    # Full query inside title
+    if query in title:
+        score += 80
+
+    # Individual words
+    for word in query_words:
+        if word in title:
+            score += 25
+
+    # Prevent scores >100
+    score = min(score, 100)
+
+    return score
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
@@ -325,11 +353,6 @@ def build_openai_client(api_key: str) -> Optional[OpenAI]:
     except Exception:
         return None
 
-
-def analyze_with_openai(job: Dict, client: Optional[OpenAI], search_query: str) -> Dict:
-    if client is None:
-        return heuristic_score(job)
-
     prompt = f"""
 You are helping an Iraqi applicant with 10+ years in data management, good English, and a bachelor in computer studies.
 
@@ -385,7 +408,7 @@ Description:
             "reason": clean_text(data.get("reason", ""))[:300],
         }
     except Exception as e:
-        st.error(f"OpenAI Error: {e}")
+
         return heuristic_score(job)
 
 
@@ -719,8 +742,6 @@ st.title("🧠 AI Job Intelligence Dashboard")
 st.caption("Hybrid job search: Google Jobs + English job boards + remote boards + custom sources")
 
 openai_client = build_openai_client(SAVED_OPENAI_KEY)
-st.write("OpenAI client exists:", openai_client is not None)
-st.write("OpenAI key loaded:", bool(SAVED_OPENAI_KEY))
 
 st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
@@ -931,7 +952,10 @@ if search_clicked:
 
     for idx, job in enumerate(all_jobs, start=1):
         progress.progress(min(idx / total, 1.0))
-        ai = analyze_with_openai(job, openai_client, query)
+        score = query_match_score(job, query)
+
+        ai = heuristic_score(job)
+        ai["query_match"] = score
         rows.append({
             "Source": job.get("source", ""),
             "Country": job.get("country", ""),
@@ -941,7 +965,7 @@ if search_clicked:
             "Relevance": ai.get("relevance", 0),
             "Visa_Likelihood": ai.get("visa_likelihood", 0),
             "English_Fit": ai.get("english_fit", 0),
-            "Query_Match": ai.get("query_match", -1),
+            "Query_Match": ai.get("query_match", 0),
             "Reason": ai.get("reason", ""),
             "URL": job.get("url", ""),
             "Description": job.get("description", "")[:3000],
@@ -952,7 +976,7 @@ if search_clicked:
     st.write("Max Query Match:", df["Query_Match"].max())
     st.write("Average Query Match:", df["Query_Match"].mean())
     if not df.empty:
-        df = df[df["Query_Match"] >= 25]
+        df = df[df["Query_Match"] >= 50]
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
             df = df[
