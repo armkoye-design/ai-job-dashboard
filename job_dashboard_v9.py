@@ -947,17 +947,9 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
             
-     # Score jobs
-     rows = []
-     progress = st.progress(0)
-
-     remote_count = sum(
-         1 for job in all_jobs
-         if job.get("country") == "Remote/Global"
-)
-
-st.write("Collected jobs:", len(all_jobs))
-st.write("Remote jobs found:", remote_count)
+    # Score jobs
+    rows = []
+    progress = st.progress(0)
 
 if not include_remote_jobs:
     all_jobs = [
