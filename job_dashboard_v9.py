@@ -532,7 +532,25 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             if not any(good in title_l for good in good_job_terms):
                 continue
+            title_l = title.lower()
+
+            bad_terms = [
+                "blog",
+                "stories",
+                "story",
+                "visa",
+                "immigration",
+                "salary",
+                "salaries",
+                "cost of living",
+                "working abroad",
+                "relocation companies",
+                "read our blog",
+                "newsletter",
+            ]
             
+            if any(term in title_l for term in bad_terms):
+                continue
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
