@@ -1343,7 +1343,11 @@ if "EBRD" in selected_sources:
         score = query_match_score(job, query)
     
         ai = heuristic_score(job)
-
+        if job.get("source") == "UNICEF":
+        ai["query_match"] = 100
+        ai["relevance"] = 100
+    else:
+        ai["query_match"] = score
         if job.get("source") in [
             "UN Careers",
             "UNDP",
