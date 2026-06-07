@@ -1327,23 +1327,23 @@ if "EBRD" in selected_sources:
             all_jobs.append(job)
       # 10) score jobs      
        for idx, job in enumerate(all_jobs, start=1):
-        progress.progress(min(idx / total, 1.0))
-    
-        score = query_match_score(job, query)
-        ai = heuristic_score(job)
-    
-        special_sources = [
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "WHO",
-            "UNHCR",
-            "WFP",
-            "IOM",
-            "World Bank",
-            "EBRD",
-            "EURES",
-        ]
+            progress.progress(min(idx / total, 1.0))
+        
+            score = query_match_score(job, query)
+            ai = heuristic_score(job)
+        
+            special_sources = [
+                "UN Careers",
+                "UNDP",
+                "UNICEF",
+                "WHO",
+                "UNHCR",
+                "WFP",
+                "IOM",
+                "World Bank",
+                "EBRD",
+                "EURES",
+            ]
     
         if job.get("source") in special_sources:
             ai["query_match"] = 100
