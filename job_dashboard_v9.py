@@ -911,7 +911,7 @@ def fetch_ebrd_jobs():
         "tags": ["EBRD"],
     }]
     
-st.write("Selected sources:", selected_sources)
+
 
 
 # ============================================================
@@ -929,6 +929,7 @@ selected_sources = st.sidebar.multiselect(
     default=[],
 )
 
+st.write("Selected sources:", selected_sources)
 
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
