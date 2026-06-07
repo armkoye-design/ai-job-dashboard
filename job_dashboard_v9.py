@@ -878,7 +878,7 @@ selected_sources = st.sidebar.multiselect(
     options=DEFAULT_SOURCES,
     default=[],
 )
-    if "UN System" in organization_types:
+if "UN System" in organization_types:
         for src in [
             "UN Careers",
             "UNDP",
