@@ -746,20 +746,29 @@ def parse_custom_source(url: str) -> List[Dict]:
     
 
 
+from urllib.parse import quote_plus
+
 def fetch_eures_jobs(query="", countries=None):
     jobs = []
 
     try:
-        # Temporary diagnostic
-        url = "https://eures.europa.eu/jobseekers_en"
+        search_text = quote_plus(query.strip()) if query else ""
+
+        # EURES search gateway
+        if search_text:
+            url = f"https://eures.europa.eu/jobseekers_en?search={search_text}"
+        else:
+            url = "https://eures.europa.eu/jobseekers_en"
+
+        country_text = ", ".join(countries) if countries else "Europe"
 
         jobs.append({
             "source": "EURES",
-            "country": "Europe",
-            "title": f"EURES Search: {query}",
+            "country": country_text,
+            "title": f"Search EURES for '{query}'",
             "company": "EURES",
-            "location": "Europe",
-            "description": "Testing EURES integration",
+            "location": country_text,
+            "description": f"Open EURES and search for {query}",
             "url": url,
             "tags": ["EURES"],
         })
