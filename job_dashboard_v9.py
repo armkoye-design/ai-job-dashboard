@@ -755,26 +755,24 @@ def fetch_eures_jobs(query="", countries=None):
     jobs = []
 
     try:
-        search_text = quote_plus(query.strip()) if query else ""
+        url = (
+            "https://europa.eu/eures/portal/jv-se/search"
+            f"?keywordsEverywhere={query.replace(' ', '+')}"
+        )
 
-        # EURES search gateway
-        if search_text:
-            url = f"https://eures.europa.eu/jobseekers_en?search={search_text}"
-        else:
-            url = "https://eures.europa.eu/jobseekers_en"
+        r = SESSION.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            },
+            timeout=30
+        )
 
-        country_text = ", ".join(countries) if countries else "Europe"
+        st.write("EURES URL:", url)
+        st.write("Status:", r.status_code)
+        st.write("Length:", len(r.text))
 
-        jobs.append({
-            "source": "EURES",
-            "country": country_text,
-            "title": f"Search EURES for '{query}'",
-            "company": "EURES",
-            "location": country_text,
-            "description": f"Open EURES and search for {query}",
-            "url": url,
-            "tags": ["EURES"],
-        })
+        st.text(r.text[:3000])
 
     except Exception as e:
         st.write("EURES error:", e)
