@@ -503,8 +503,9 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 continue
             if title.lower() in GENERIC_TITLE_SKIP:
                 continue
-            if not any(x in href_l for x in ["/job", "/jobs/", "/in/"]):
-                continue
+           # TEMP DEBUG    
+           # if not any(x in href_l for x in ["/job", "/jobs/", "/in/"]):
+           #    continue
 
             context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
             combined = f"{title} {context}".lower()
