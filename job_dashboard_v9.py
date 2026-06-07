@@ -772,7 +772,16 @@ def fetch_eures_jobs(query="", countries=None):
         st.write("Status:", r.status_code)
         st.write("Length:", len(r.text))
 
-        st.text(r.text[:3000])
+    import re
+
+    matches = re.findall(
+        r'https://[^"]+',
+        r.text
+    )
+
+    st.write("Found URLs:")
+    for m in matches[:100]:
+        st.write(m)
 
     except Exception as e:
         st.write("EURES error:", e)
@@ -1100,7 +1109,8 @@ if search_clicked:
     
     df = pd.DataFrame(rows)
     
-    st.write(df[["Title", "Query_Match"]].head(20))
+    if not df.empty:
+    st.write(df.head(20))
     st.write("Rows before Query filter:", len(df))
     
     if not df.empty:
