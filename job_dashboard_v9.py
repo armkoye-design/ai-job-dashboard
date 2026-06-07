@@ -1157,6 +1157,8 @@ if search_clicked:
     if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
         jobs = fetch_unicef_jobs()
+        st.write("UNICEF jobs:", jobs)
+        st.write("UNICEF count:", len(jobs))
         for job in jobs:
             key = (
                 job.get("source"),
