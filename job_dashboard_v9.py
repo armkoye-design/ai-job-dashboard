@@ -534,6 +534,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "about",
                 "contact",
                 "newsletter",
+                "english jobs germany",
+                "english jobs",
             ]
             
             good_job_terms = [
@@ -1117,7 +1119,7 @@ if search_clicked:
             [["Title", "Country"]]
         )
     
-        df = df[df["Query_Match"] >= 25]
+        df = df[df["Query_Match"] >= 35]
 
     
 
