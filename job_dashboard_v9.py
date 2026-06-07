@@ -832,6 +832,38 @@ def fetch_undp_jobs():
         pass
 
     return jobs    
+
+def fetch_unicef_jobs():
+    return [{
+        "source": "UNICEF",
+        "country": "International",
+        "title": "Visit UNICEF Careers",
+        "company": "UNICEF",
+        "location": "Global",
+        "description": "UNICEF vacancies",
+        "url": "https://jobs.unicef.org",
+        "tags": ["UNICEF"],
+    }]
+        
+    if "UNICEF" in selected_sources:
+    st.write("Searching UNICEF")
+
+    jobs = fetch_unicef_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
 # ============================================================
 # STREAMLIT UI
 # ============================================================
@@ -842,6 +874,26 @@ openai_client = build_openai_client(SAVED_OPENAI_KEY)
 
 st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
+    if "UN System" in organization_types:
+    for src in [
+        "UN Careers",
+        "UNDP",
+        "UNICEF",
+        "UNHCR",
+        "WHO",
+        "WFP",
+        "IOM",
+    ]:
+        if src not in selected_sources:
+            selected_sources.append(src)
+
+if "Development Bank" in organization_types:
+    for src in [
+        "World Bank",
+        "EBRD",
+    ]:
+        if src not in selected_sources:
+            selected_sources.append(src)
     "Choose job sources",
     options=DEFAULT_SOURCES,
     default=[],
@@ -1045,8 +1097,9 @@ if search_clicked:
                 continue
 
             seen_keys.add(key)
-            all_jobs.append(job)       
-
+            all_jobs.append(job) 
+            
+    
     # 9) Custom source URL
     if custom_source_url.strip():
         st.write("Searching custom source URL")
@@ -1128,6 +1181,9 @@ if search_clicked:
         )
     
         df = df[df["Query_Match"] >= 35]
+        st.session_state.results_df = df
+
+
 
     
 
