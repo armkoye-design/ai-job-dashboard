@@ -891,7 +891,7 @@ if "UN System" in organization_types:
             if src not in selected_sources:
                 selected_sources.append(src)
     
-    if "Development Bank" in organization_types:
+if "Development Bank" in organization_types:
         for src in [
             "World Bank",
             "EBRD",
