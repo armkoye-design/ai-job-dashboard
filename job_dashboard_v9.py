@@ -798,7 +798,7 @@ st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
     "Choose job sources",
     options=DEFAULT_SOURCES,
-    default=DEFAULT_SOURCES,
+    default=[],
 )
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
@@ -862,6 +862,13 @@ if any(country in ENGLISH_SPEAKING_COUNTRIES for country in countries):
 st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
 
 if search_clicked:
+    if not countries:
+    st.warning("Please select at least one country.")
+    st.stop()
+
+    if not selected_sources:
+    st.warning("Please select at least one job source.")
+    st.stop()
     all_jobs: List[Dict] = []
     seen_keys = set()
 
