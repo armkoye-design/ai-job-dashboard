@@ -911,8 +911,9 @@ def fetch_ebrd_jobs():
         "tags": ["EBRD"],
     }]
     
-    st.write("Selected sources:", selected_sources)
-    if "UNICEF" in selected_sources:
+st.write("Selected sources:", selected_sources)
+    
+if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
     
         jobs = fetch_unicef_jobs()
@@ -933,130 +934,130 @@ def fetch_ebrd_jobs():
             all_jobs.append(job)
 
 
-    if "WHO" in selected_sources:
-        st.write("Searching WHO")
-    
-        jobs = fetch_who_jobs()
-    
-        for job in jobs:
-            key = (
-                job.get("source"),
-                job.get("title"),
-                job.get("company"),
-                job.get("location"),
-                job.get("url"),
-            )
-    
-            if key in seen_keys:
-                continue
+if "WHO" in selected_sources:
+    st.write("Searching WHO")
 
-            seen_keys.add(key)
-            all_jobs.append(job)
+    jobs = fetch_who_jobs()
 
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
 
-    if "UNHCR" in selected_sources:
-        st.write("Searching UNHCR")
-    
-        jobs = fetch_unhcr_jobs()
-    
-        for job in jobs:
-            key = (
-                job.get("source"),
-                job.get("title"),
-                job.get("company"),
-                job.get("location"),
-                job.get("url"),
-            )
-    
-            if key in seen_keys:
-                continue
-    
-            seen_keys.add(key)
-            all_jobs.append(job)
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
 
 
-    if "WFP" in selected_sources:
-        st.write("Searching WFP")
-    
-        jobs = fetch_wfp_jobs()
-    
-        for job in jobs:
-            key = (
-                job.get("source"),
-                job.get("title"),
-                job.get("company"),
-                job.get("location"),
-                job.get("url"),
-            )
-    
-            if key in seen_keys:
-                continue
-    
-            seen_keys.add(key)
-            all_jobs.append(job)
+if "UNHCR" in selected_sources:
+    st.write("Searching UNHCR")
+
+    jobs = fetch_unhcr_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
 
 
-    if "IOM" in selected_sources:
-        st.write("Searching IOM")
-    
-        jobs = fetch_iom_jobs()
-    
-        for job in jobs:
-            key = (
-                job.get("source"),
-                job.get("title"),
-                job.get("company"),
-                job.get("location"),
-                job.get("url"),
-            )
-    
-            if key in seen_keys:
-                continue
-    
-            seen_keys.add(key)
-            all_jobs.append(job)
+if "WFP" in selected_sources:
+    st.write("Searching WFP")
+
+    jobs = fetch_wfp_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
 
 
-    if "WORLDBANK" in selected_sources:
-        st.write("Searching WORLDBANK")
-    
-        jobs = fetch_worldbank_jobs()
-    
-        for job in jobs:
-            key = (
-                job.get("source"),
-                job.get("title"),
-                job.get("company"),
-                job.get("location"),
-                job.get("url"),
-            )
-    
-            if key in seen_keys:
-                continue
-    
-            seen_keys.add(key)
-            all_jobs.append(job)
+if "IOM" in selected_sources:
+    st.write("Searching IOM")
+
+    jobs = fetch_iom_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
 
 
-    if "EBRD" in selected_sources:
-        st.write("Searching EBRD")
-    
-        jobs = fetch_ebrd_jobs()
-    
-        for job in jobs:
-            key = (
-                job.get("source"),
-                job.get("title"),
-                job.get("company"),
-                job.get("location"),
-                job.get("url"),
-            )
-    
-            if key in seen_keys:
-                continue
-    
-            seen_keys.add(key)
-            all_jobs.append(job)
+if "WORLDBANK" in selected_sources:
+    st.write("Searching WORLDBANK")
+
+    jobs = fetch_worldbank_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+
+if "EBRD" in selected_sources:
+    st.write("Searching EBRD")
+
+    jobs = fetch_ebrd_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
 
 # ============================================================
 # STREAMLIT UI
