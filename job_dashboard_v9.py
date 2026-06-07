@@ -1183,10 +1183,6 @@ if search_clicked:
                 continue
             seen_keys.add(key)
             all_jobs.append(job)
-
-    
-
-    if len(all_jobs) > 0:
         
         
 
