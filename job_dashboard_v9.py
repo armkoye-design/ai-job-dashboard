@@ -874,31 +874,32 @@ openai_client = build_openai_client(SAVED_OPENAI_KEY)
 
 st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
-    
-    if "UN System" in organization_types:
-        for src in [
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "UNHCR",
-            "WHO",
-            "WFP",
-            "IOM",
-        ]:
-            if src not in selected_sources:
-                selected_sources.append(src)   
-    
-    if "Development Bank" in organization_types:
-        for src in [
-            "World Bank",
-            "EBRD",
-        ]:
-            if src not in selected_sources:
-                selected_sources.append(src)
     "Choose job sources",
     options=DEFAULT_SOURCES,
     default=[],
 )
+if "UN System" in organization_types:
+    for src in [
+        "UN Careers",
+        "UNDP",
+        "UNICEF",
+        "UNHCR",
+        "WHO",
+        "WFP",
+        "IOM",
+    ]:
+        if src not in selected_sources:
+            selected_sources.append(src)
+
+if "Development Bank" in organization_types:
+    for src in [
+        "World Bank",
+        "EBRD",
+    ]:
+        if src not in selected_sources:
+            selected_sources.append(src)
+
+
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
     placeholder="https://example.com/jobs",
