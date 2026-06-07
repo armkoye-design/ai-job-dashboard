@@ -745,7 +745,7 @@ def parse_custom_source(url: str) -> List[Dict]:
     return found
     
 jobs = fetch_eures_jobs(query, countries)
-    jobs = []
+       jobs = []
 
     try:
         url = "https://eures.europa.eu/index_en"
@@ -765,6 +765,7 @@ jobs = fetch_eures_jobs(query, countries)
         pass
 
     return jobs
+
 def fetch_eures_jobs(query="", countries=None):
     jobs = []
 
