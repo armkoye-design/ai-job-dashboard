@@ -845,22 +845,22 @@ def fetch_unicef_jobs():
         "tags": ["UNICEF"],
     }]
         
-if "UNICEF" in selected_sources:
-    st.write("Searching UNICEF")
-
-    jobs = fetch_unicef_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
+    if "UNICEF" in selected_sources:
+        st.write("Searching UNICEF")
+    
+        jobs = fetch_unicef_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
 
         seen_keys.add(key)
         all_jobs.append(job)
