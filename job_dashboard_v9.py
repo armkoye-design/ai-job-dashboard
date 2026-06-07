@@ -1097,37 +1097,26 @@ if search_clicked:
             "Description": job.get("description", "")[:3000],
         })
     
-    df = pd.DataFrame(rows)
-    st.write("Rows before Query filter:", len(df))
+   df = pd.DataFrame(rows)
 
-    if not df.empty:
-        st.dataframe(
-            df[["Title", "Country", "Query_Match"]].head(20),
-            use_container_width=True
-        )
-    
+st.write(df[["Title", "Query_Match"]].head(20))
+st.write("Rows before Query filter:", len(df))
+
+if not df.empty:
+    st.dataframe(
+        df[["Title", "Country", "Query_Match"]].head(20),
+        use_container_width=True
+    )
+
     st.write("Max Query Match:", df["Query_Match"].max())
     st.write("Average Query Match:", df["Query_Match"].mean())
-    
-    if not df.empty:
-        st.write(
+
+    st.write(
         df[df["Title"].str.contains("analyst", case=False, na=False)]
         [["Title", "Country"]]
     )
-        df = df[df["Query_Match"] >= 25]
-    
-    if not df.empty:
-        if min_visa > 0 or min_relevance > 0 or min_english > 0:
-            df = df[
-                (df["Visa_Likelihood"] >= min_visa) &
-                (df["Relevance"] >= min_relevance) &
-                (df["English_Fit"] >= min_english)
-            ]
-        if only_high_fit:
-            df = df[(df["Visa_Likelihood"] >= 60) & (df["Relevance"] >= 60) & (df["English_Fit"] >= 60)]
-        df = df.sort_values(by=["Visa_Likelihood", "Relevance", "English_Fit"], ascending=[False, False, False])
-    
-    st.session_state.results_df = df
+
+    df = df[df["Query_Match"] >= 25]
 
 
       
