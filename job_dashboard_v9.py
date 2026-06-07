@@ -864,6 +864,193 @@ def fetch_unicef_jobs():
 
         seen_keys.add(key)
         all_jobs.append(job)
+
+def fetch_who_jobs():
+    return [{
+        "source": "WHO",
+        "country": "International",
+        "title": "Visit WHO Careers",
+        "company": "WHO",
+        "location": "Global",
+        "description": "WHO vacancies",
+        "url": "https://careers.who.int",
+        "tags": ["WHO"],
+    }]
+    if "WHO" in selected_sources:
+        st.write("Searching WHO")
+    
+        jobs = fetch_who_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+def fetch_unhcr_jobs():
+    return [{
+        "source": "UNHCR",
+        "country": "International",
+        "title": "Visit UNHCR Careers",
+        "company": "UNHCR",
+        "location": "Global",
+        "description": "UNHCR vacancies",
+        "url": "https://www.unhcr.org/careers",
+        "tags": ["UNHCR"],
+    }]
+    if "UNHCR" in selected_sources:
+    st.write("Searching UNHCR")
+
+    jobs = fetch_unhcr_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+def fetch_wfp_jobs():
+    return [{
+        "source": "WFP",
+        "country": "International",
+        "title": "Visit WFP Careers",
+        "company": "World Food Programme",
+        "location": "Global",
+        "description": "WFP vacancies",
+        "url": "https://www.wfp.org/careers",
+        "tags": ["WFP"],
+    }]
+    if "WFP" in selected_sources:
+    st.write("Searching WFP")
+
+    jobs = fetch_wfp_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+def fetch_iom_jobs():
+    return [{
+        "source": "IOM",
+        "country": "International",
+        "title": "Visit IOM Careers",
+        "company": "IOM",
+        "location": "Global",
+        "description": "IOM vacancies",
+        "url": "https://www.iom.int/careers",
+        "tags": ["IOM"],
+    }]
+    if "IOM" in selected_sources:
+    st.write("Searching IOM")
+
+    jobs = fetch_iom_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+def fetch_worldbank_jobs():
+    return [{
+        "source": "World Bank",
+        "country": "International",
+        "title": "Visit World Bank Careers",
+        "company": "World Bank",
+        "location": "Global",
+        "description": "World Bank vacancies",
+        "url": "https://www.worldbank.org/en/about/careers",
+        "tags": ["World Bank"],
+    }]
+    if "WORLDBANK" in selected_sources:
+    st.write("Searching WORLDBANK")
+
+    jobs = fetch_worldbank_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
+def fetch_ebrd_jobs():
+    return [{
+        "source": "EBRD",
+        "country": "International",
+        "title": "Visit EBRD Careers",
+        "company": "EBRD",
+        "location": "Global",
+        "description": "EBRD vacancies",
+        "url": "https://jobs.ebrd.com",
+        "tags": ["EBRD"],
+    }]
+    if "EBRD" in selected_sources:
+    st.write("Searching EBRD")
+
+    jobs = fetch_ebrd_jobs()
+
+    for job in jobs:
+        key = (
+            job.get("source"),
+            job.get("title"),
+            job.get("company"),
+            job.get("location"),
+            job.get("url"),
+        )
+
+        if key in seen_keys:
+            continue
+
+        seen_keys.add(key)
+        all_jobs.append(job)
+
 # ============================================================
 # STREAMLIT UI
 # ============================================================
