@@ -1331,6 +1331,17 @@ if search_clicked:
     
         ai = heuristic_score(job)
 
+        if job.get("source") in [
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "WHO",
+            "UNHCR",
+            "WFP",
+            "IOM",
+        ]:
+            ai["query_match"] = 100
+
         if job.get("source") == "EURES":
             ai["relevance"] = 100
             ai["query_match"] = 100
