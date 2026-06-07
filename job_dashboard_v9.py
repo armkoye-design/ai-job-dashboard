@@ -32,6 +32,19 @@ try:
 except:
     SAVED_OPENAI_KEY = ""
 
+
+SPECIAL_SOURCES = [
+    "UN Careers",
+    "UNDP",
+    "UNICEF",
+    "WHO",
+    "UNHCR",
+    "WFP",
+    "IOM",
+    "World Bank",
+    "EBRD",
+    "EURES",
+]
 # ============================================================
 # DEFAULTS
 # ============================================================
@@ -929,7 +942,7 @@ selected_sources = st.sidebar.multiselect(
     default=[],
 )
 
-st.write("Selected sources:", selected_sources)
+
 
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
@@ -1157,8 +1170,7 @@ if search_clicked:
     if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
         jobs = fetch_unicef_jobs()
-        st.write("UNICEF jobs:", jobs)
-        st.write("UNICEF count:", len(jobs))
+        
         for job in jobs:
             key = (
                 job.get("source"),
@@ -1172,10 +1184,10 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
 
-    st.write("All jobs count:", len(all_jobs))
+    
 
     if len(all_jobs) > 0:
-        st.write(all_jobs)
+        
         
 
     if "WHO" in selected_sources:
@@ -1379,12 +1391,10 @@ if search_clicked:
         })
     df = pd.DataFrame(rows)
 
-    st.write("Rows count:", len(rows))
+    
     
     if not df.empty:
-        st.write("Max Query Match:", df["Query_Match"].max())
-        st.write("Average Query Match:", df["Query_Match"].mean())
-    
+       
         # temporary while debugging
         df = df[df["Query_Match"] >= 0]
     
