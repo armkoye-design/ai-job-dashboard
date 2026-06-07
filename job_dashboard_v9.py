@@ -744,27 +744,7 @@ def parse_custom_source(url: str) -> List[Dict]:
 
     return found
     
-jobs = fetch_eures_jobs(query, countries)
-       jobs = []
 
-    try:
-        url = "https://eures.europa.eu/index_en"
-
-        jobs.append({
-            "source": "EURES",
-            "country": "Europe",
-            "title": "Visit EURES Jobs",
-            "company": "EURES",
-            "location": "Europe",
-            "description": "European Employment Services",
-            "url": url,
-            "tags": ["EURES"],
-        })
-
-    except Exception:
-        pass
-
-    return jobs
 
 def fetch_eures_jobs(query="", countries=None):
     jobs = []
@@ -991,7 +971,7 @@ if search_clicked:
     if "EURES" in selected_sources:
         st.write("Searching EURES")
     
-        jobs = fetch_eures_test()
+        jobs = fetch_eures_jobs(query, countries)
     
         for job in jobs:
             key = (
