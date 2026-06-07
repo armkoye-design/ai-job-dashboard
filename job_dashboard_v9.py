@@ -878,26 +878,6 @@ selected_sources = st.sidebar.multiselect(
     options=DEFAULT_SOURCES,
     default=[],
 )
-if "UN System" in organization_types:
-        for src in [
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "UNHCR",
-            "WHO",
-            "WFP",
-            "IOM",
-        ]:
-            if src not in selected_sources:
-                selected_sources.append(src)
-    
-if "Development Bank" in organization_types:
-        for src in [
-            "World Bank",
-            "EBRD",
-        ]:
-            if src not in selected_sources:
-                selected_sources.append(src)
 
 
 custom_source_url = st.sidebar.text_input(
@@ -919,6 +899,28 @@ organization_types = st.sidebar.multiselect(
     ],
     default=[],
 )
+
+if "UN System" in organization_types:
+        for src in [
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "UNHCR",
+            "WHO",
+            "WFP",
+            "IOM",
+        ]:
+            if src not in selected_sources:
+                selected_sources.append(src)
+    
+if "Development Bank" in organization_types:
+        for src in [
+            "World Bank",
+            "EBRD",
+        ]:
+            if src not in selected_sources:
+                selected_sources.append(src)
+
 min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
 min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
 min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
