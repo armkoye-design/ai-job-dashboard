@@ -845,7 +845,7 @@ def fetch_unicef_jobs():
         "tags": ["UNICEF"],
     }]
         
-    if "UNICEF" in selected_sources:
+if "UNICEF" in selected_sources:
     st.write("Searching UNICEF")
 
     jobs = fetch_unicef_jobs()
