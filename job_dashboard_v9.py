@@ -863,12 +863,12 @@ st.info("Countries go in the Countries box. Source URLs go in the custom source 
 
 if search_clicked:
     if not countries:
-    st.warning("Please select at least one country.")
-    st.stop()
+        st.warning("Please select at least one country.")
+        st.stop()
 
     if not selected_sources:
-    st.warning("Please select at least one job source.")
-    st.stop()
+        st.warning("Please select at least one job source.")
+        st.stop()
     all_jobs: List[Dict] = []
     seen_keys = set()
 
