@@ -1001,24 +1001,24 @@ def fetch_worldbank_jobs():
         "tags": ["World Bank"],
     }]
     if "WORLDBANK" in selected_sources:
-    st.write("Searching WORLDBANK")
-
-    jobs = fetch_worldbank_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
+        st.write("Searching WORLDBANK")
+    
+        jobs = fetch_worldbank_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
 
 def fetch_ebrd_jobs():
     return [{
