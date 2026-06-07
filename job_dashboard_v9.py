@@ -43,6 +43,7 @@ DEFAULT_SOURCES = [
     "Relocate.me",
     "RemoteOK",
     "We Work Remotely",
+    "EURES",
 
     # Version 10
     "EURES",
@@ -742,6 +743,28 @@ def parse_custom_source(url: str) -> List[Dict]:
         }))
 
     return found
+    
+def fetch_eures_test():
+    jobs = []
+
+    try:
+        url = "https://eures.europa.eu/index_en"
+
+        jobs.append({
+            "source": "EURES",
+            "country": "Europe",
+            "title": "Visit EURES Jobs",
+            "company": "EURES",
+            "location": "Europe",
+            "description": "European Employment Services",
+            "url": url,
+            "tags": ["EURES"],
+        })
+
+    except Exception:
+        pass
+
+    return jobs
 # ==========================================
 # VERSION 10 - UN CAREERS
 # ==========================================
@@ -765,6 +788,7 @@ def fetch_un_jobs():
         pass
 
     return jobs
+    
 def fetch_undp_jobs():
     jobs = []
 
@@ -940,7 +964,27 @@ if search_clicked:
                 continue
             seen_keys.add(key)
             all_jobs.append(job)
-    # 6) UN Careers
+    # 6) EURES
+    if "EURES" in selected_sources:
+        st.write("Searching EURES")
+    
+        jobs = fetch_eures_test()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    # 7) UN Careers
     if "UN Careers" in selected_sources:
         st.write("Searching UN Careers")
 
@@ -960,7 +1004,7 @@ if search_clicked:
 
             seen_keys.add(key)
             all_jobs.append(job)
-    # 7) UNDP
+    # 8) UNDP
     if "UNDP" in selected_sources:
         st.write("Searching UNDP")
 
@@ -981,7 +1025,7 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)       
 
-    # 8) Custom source URL
+    # 9) Custom source URL
     if custom_source_url.strip():
         st.write("Searching custom source URL")
 
