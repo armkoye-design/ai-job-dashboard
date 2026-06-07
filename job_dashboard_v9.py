@@ -559,7 +559,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if not any(term in title_l for term in good_job_terms):
                 continue
             
-            
+            st.write("FOUND:", title)
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
