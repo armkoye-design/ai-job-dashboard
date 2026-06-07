@@ -1097,26 +1097,28 @@ if search_clicked:
             "Description": job.get("description", "")[:3000],
         })
     
-   df = pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    
+    st.write(df[["Title", "Query_Match"]].head(20))
+    st.write("Rows before Query filter:", len(df))
+    
+    if not df.empty:
+        st.dataframe(
+            df[["Title", "Country", "Query_Match"]].head(20),
+            use_container_width=True
+        )
+    
+        st.write("Max Query Match:", df["Query_Match"].max())
+        st.write("Average Query Match:", df["Query_Match"].mean())
+    
+        st.write(
+            df[df["Title"].str.contains("analyst", case=False, na=False)]
+            [["Title", "Country"]]
+        )
+    
+        df = df[df["Query_Match"] >= 25]
 
-st.write(df[["Title", "Query_Match"]].head(20))
-st.write("Rows before Query filter:", len(df))
-
-if not df.empty:
-    st.dataframe(
-        df[["Title", "Country", "Query_Match"]].head(20),
-        use_container_width=True
-    )
-
-    st.write("Max Query Match:", df["Query_Match"].max())
-    st.write("Average Query Match:", df["Query_Match"].mean())
-
-    st.write(
-        df[df["Title"].str.contains("analyst", case=False, na=False)]
-        [["Title", "Country"]]
-    )
-
-    df = df[df["Query_Match"] >= 25]
+    
 
 
       
