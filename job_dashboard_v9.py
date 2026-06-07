@@ -1325,8 +1325,20 @@ if search_clicked:
 
             seen_keys.add(key)
             all_jobs.append(job)
-      # 10) score jobs      
+     # 10) Score jobs
+    rows = []
+    progress = st.progress(0)
+    
+    if not include_remote_jobs:
+        all_jobs = [
+            job for job in all_jobs
+            if job.get("country") != "Remote/Global"
+        ]
+    
+    total = max(len(all_jobs), 1)
+    
     for idx, job in enumerate(all_jobs, start=1):
+    
         progress.progress(min(idx / total, 1.0))
     
         score = query_match_score(job, query)
@@ -1345,26 +1357,26 @@ if search_clicked:
             "EURES",
         ]
     
-    if job.get("source") in special_sources:
-        ai["query_match"] = 100
-        ai["relevance"] = 100
-    else:
-        ai["query_match"] = score
+        if job.get("source") in special_sources:
+            ai["query_match"] = 100
+            ai["relevance"] = 100
+        else:
+            ai["query_match"] = score
     
-    rows.append({
-        "Source": job.get("source", ""),
-        "Country": job.get("country", ""),
-        "Title": job.get("title", ""),
-        "Company": job.get("company", ""),
-        "Location": job.get("location", ""),
-        "Relevance": ai.get("relevance", 0),
-        "Visa_Likelihood": ai.get("visa_likelihood", 0),
-        "English_Fit": ai.get("english_fit", 0),
-        "Query_Match": ai.get("query_match", 0),
-        "Reason": ai.get("reason", ""),
-        "URL": job.get("url", ""),
-        "Description": job.get("description", "")[:3000],
-    })
+        rows.append({
+            "Source": job.get("source", ""),
+            "Country": job.get("country", ""),
+            "Title": job.get("title", ""),
+            "Company": job.get("company", ""),
+            "Location": job.get("location", ""),
+            "Relevance": ai.get("relevance", 0),
+            "Visa_Likelihood": ai.get("visa_likelihood", 0),
+            "English_Fit": ai.get("english_fit", 0),
+            "Query_Match": ai.get("query_match", 0),
+            "Reason": ai.get("reason", ""),
+            "URL": job.get("url", ""),
+            "Description": job.get("description", "")[:3000],
+        })
       
 # ============================================================
 # DISPLAY
