@@ -1172,6 +1172,12 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
 
+    st.write("All jobs count:", len(all_jobs))
+
+    if len(all_jobs) > 0:
+        st.write(all_jobs)
+        
+
     if "WHO" in selected_sources:
         st.write("Searching WHO")
     
@@ -1191,6 +1197,7 @@ if search_clicked:
     
             seen_keys.add(key)
             all_jobs.append(job)
+    
 
 
 if "UNHCR" in selected_sources:
