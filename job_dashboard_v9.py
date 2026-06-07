@@ -1110,8 +1110,8 @@ if search_clicked:
     df = pd.DataFrame(rows)
     
     if not df.empty:
-    st.write(df.head(20))
-    st.write("Rows before Query filter:", len(df))
+        st.write(df.head(20))
+        st.write("Rows before Query filter:", len(df))
     
     if not df.empty:
         st.dataframe(
