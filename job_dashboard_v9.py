@@ -1154,40 +1154,40 @@ if search_clicked:
             all_jobs.append(job) 
     # 9) Other Agencies
     if "UNICEF" in selected_sources:
-    st.write("Searching UNICEF")
-    jobs = fetch_unicef_jobs()
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-        if key in seen_keys:
-            continue
-        seen_keys.add(key)
-        all_jobs.append(job)
+        st.write("Searching UNICEF")
+        jobs = fetch_unicef_jobs()
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_jobs.append(job)
 
     if "WHO" in selected_sources:
-    st.write("Searching WHO")
-
-    jobs = fetch_who_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
+        st.write("Searching WHO")
+    
+        jobs = fetch_who_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
 
 
 if "UNHCR" in selected_sources:
