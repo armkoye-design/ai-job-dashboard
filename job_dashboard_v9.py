@@ -772,16 +772,16 @@ def fetch_eures_jobs(query="", countries=None):
         st.write("Status:", r.status_code)
         st.write("Length:", len(r.text))
 
-    import re
-
-    matches = re.findall(
-        r'https://[^"]+',
-        r.text
-    )
-
-    st.write("Found URLs:")
-    for m in matches[:100]:
-        st.write(m)
+        import re
+    
+        matches = re.findall(
+            r'https://[^"]+',
+            r.text
+        )
+    
+        st.write("Found URLs:")
+        for m in matches[:100]:
+            st.write(m)
 
     except Exception as e:
         st.write("EURES error:", e)
