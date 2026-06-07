@@ -1097,7 +1097,7 @@ if search_clicked:
         df[df["Title"].str.contains("analyst", case=False, na=False)]
         [["Title", "Country"]]
     )
-        df = df[df["Query_Match"] >= 25]
+        df = df[df["Query_Match"] >= 0]
     
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
