@@ -1200,109 +1200,109 @@ if search_clicked:
     
 
 
-if "UNHCR" in selected_sources:
-    st.write("Searching UNHCR")
-
-    jobs = fetch_unhcr_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "WFP" in selected_sources:
-    st.write("Searching WFP")
-
-    jobs = fetch_wfp_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "IOM" in selected_sources:
-    st.write("Searching IOM")
-
-    jobs = fetch_iom_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "WORLDBANK" in selected_sources:
-    st.write("Searching WORLDBANK")
-
-    jobs = fetch_worldbank_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "EBRD" in selected_sources:
-    st.write("Searching EBRD")
-
-    jobs = fetch_ebrd_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
+    if "UNHCR" in selected_sources:
+        st.write("Searching UNHCR")
+    
+        jobs = fetch_unhcr_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "WFP" in selected_sources:
+        st.write("Searching WFP")
+    
+        jobs = fetch_wfp_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "IOM" in selected_sources:
+        st.write("Searching IOM")
+    
+        jobs = fetch_iom_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "WORLDBANK" in selected_sources:
+        st.write("Searching WORLDBANK")
+    
+        jobs = fetch_worldbank_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "EBRD" in selected_sources:
+        st.write("Searching EBRD")
+    
+        jobs = fetch_ebrd_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
             
     
     # 9) Custom source URL
@@ -1326,45 +1326,45 @@ if "EBRD" in selected_sources:
             seen_keys.add(key)
             all_jobs.append(job)
       # 10) score jobs      
-for idx, job in enumerate(all_jobs, start=1):
-    progress.progress(min(idx / total, 1.0))
-
-    score = query_match_score(job, query)
-    ai = heuristic_score(job)
-
-    special_sources = [
-        "UN Careers",
-        "UNDP",
-        "UNICEF",
-        "WHO",
-        "UNHCR",
-        "WFP",
-        "IOM",
-        "World Bank",
-        "EBRD",
-        "EURES",
-    ]
-
-if job.get("source") in special_sources:
-    ai["query_match"] = 100
-    ai["relevance"] = 100
-else:
-    ai["query_match"] = score
-
-rows.append({
-    "Source": job.get("source", ""),
-    "Country": job.get("country", ""),
-    "Title": job.get("title", ""),
-    "Company": job.get("company", ""),
-    "Location": job.get("location", ""),
-    "Relevance": ai.get("relevance", 0),
-    "Visa_Likelihood": ai.get("visa_likelihood", 0),
-    "English_Fit": ai.get("english_fit", 0),
-    "Query_Match": ai.get("query_match", 0),
-    "Reason": ai.get("reason", ""),
-    "URL": job.get("url", ""),
-    "Description": job.get("description", "")[:3000],
-})
+    for idx, job in enumerate(all_jobs, start=1):
+        progress.progress(min(idx / total, 1.0))
+    
+        score = query_match_score(job, query)
+        ai = heuristic_score(job)
+    
+        special_sources = [
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "WHO",
+            "UNHCR",
+            "WFP",
+            "IOM",
+            "World Bank",
+            "EBRD",
+            "EURES",
+        ]
+    
+    if job.get("source") in special_sources:
+        ai["query_match"] = 100
+        ai["relevance"] = 100
+    else:
+        ai["query_match"] = score
+    
+    rows.append({
+        "Source": job.get("source", ""),
+        "Country": job.get("country", ""),
+        "Title": job.get("title", ""),
+        "Company": job.get("company", ""),
+        "Location": job.get("location", ""),
+        "Relevance": ai.get("relevance", 0),
+        "Visa_Likelihood": ai.get("visa_likelihood", 0),
+        "English_Fit": ai.get("english_fit", 0),
+        "Query_Match": ai.get("query_match", 0),
+        "Reason": ai.get("reason", ""),
+        "URL": job.get("url", ""),
+        "Description": job.get("description", "")[:3000],
+    })
       
 # ============================================================
 # DISPLAY
