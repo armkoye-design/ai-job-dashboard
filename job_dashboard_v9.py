@@ -817,12 +817,7 @@ organization_types = st.sidebar.multiselect(
         "Development Bank",
         "European Union",
     ],
-    default=[
-        "Private Sector",
-        "UN System",
-        "International NGO",
-        "Development Bank",
-    ],
+    default=[],
 )
 min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
 min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
@@ -840,7 +835,7 @@ with left:
     selected_countries = st.multiselect(
         "Choose countries",
         options=DEFAULT_COUNTRIES,
-        default=["Canada", "United Kingdom", "Ireland", "Netherlands"],
+        default=[],
     )
     custom_country = st.text_input(
         "Add custom country",
