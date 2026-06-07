@@ -1075,7 +1075,12 @@ if search_clicked:
         score = query_match_score(job, query)
     
         ai = heuristic_score(job)
-        ai["query_match"] = score
+
+        if job.get("source") == "EURES":
+            ai["relevance"] = 100
+            ai["query_match"] = 100
+        else:
+            ai["query_match"] = query_match_score(job, query)
     
         rows.append({
             "Source": job.get("source", ""),
@@ -1109,7 +1114,7 @@ if search_clicked:
         df[df["Title"].str.contains("analyst", case=False, na=False)]
         [["Title", "Country"]]
     )
-        df = df[df["Query_Match"] >= 0]
+        df = df[df["Query_Match"] >= 25]
     
     if not df.empty:
         if min_visa > 0 or min_relevance > 0 or min_english > 0:
