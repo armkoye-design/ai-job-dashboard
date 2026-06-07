@@ -844,7 +844,8 @@ def fetch_unicef_jobs():
         "url": "https://jobs.unicef.org",
         "tags": ["UNICEF"],
     }]
-        
+
+    st.write("Selected sources:", selected_sources)
     if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
     
@@ -862,8 +863,8 @@ def fetch_unicef_jobs():
             if key in seen_keys:
                 continue
 
-        seen_keys.add(key)
-        all_jobs.append(job)
+            seen_keys.add(key)
+            all_jobs.append(job)
 
 def fetch_who_jobs():
     return [{
@@ -893,8 +894,8 @@ def fetch_who_jobs():
             if key in seen_keys:
                 continue
 
-        seen_keys.add(key)
-        all_jobs.append(job)
+            seen_keys.add(key)
+            all_jobs.append(job)
 
 def fetch_unhcr_jobs():
     return [{
