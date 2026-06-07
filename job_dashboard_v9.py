@@ -1325,89 +1325,46 @@ if "EBRD" in selected_sources:
 
             seen_keys.add(key)
             all_jobs.append(job)
-            
-    # Score jobs
-    rows = []
-    progress = st.progress(0)
+      # 10) score jobs      
+   for idx, job in enumerate(all_jobs, start=1):
+    progress.progress(min(idx / total, 1.0))
 
-    if not include_remote_jobs:
-        all_jobs = [
-            job for job in all_jobs
-            if job.get("country") != "Remote/Global"
-        ]
+    score = query_match_score(job, query)
+    ai = heuristic_score(job)
 
-    total = max(len(all_jobs), 1)
-    
-    for idx, job in enumerate(all_jobs, start=1):
-        progress.progress(min(idx / total, 1.0))
-        score = query_match_score(job, query)
-    
-        ai = heuristic_score(job)
-        if job.get("source") == "UNICEF":
-            ai["query_match"] = 100
-            ai["relevance"] = 100
-        else:
-            ai["query_match"] = score
-        if job.get("source") in [
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "WHO",
-            "UNHCR",
-            "WFP",
-            "IOM",
-        ]:
-            ai["query_match"] = 100
+    special_sources = [
+        "UN Careers",
+        "UNDP",
+        "UNICEF",
+        "WHO",
+        "UNHCR",
+        "WFP",
+        "IOM",
+        "World Bank",
+        "EBRD",
+        "EURES",
+    ]
 
-        if job.get("source") == "EURES":
-            ai["relevance"] = 100
-            ai["query_match"] = 100
-        else:
-            ai["query_match"] = query_match_score(job, query)
-    
-        rows.append({
-            "Source": job.get("source", ""),
-            "Country": job.get("country", ""),
-            "Title": job.get("title", ""),
-            "Company": job.get("company", ""),
-            "Location": job.get("location", ""),
-            "Relevance": ai.get("relevance", 0),
-            "Visa_Likelihood": ai.get("visa_likelihood", 0),
-            "English_Fit": ai.get("english_fit", 0),
-            "Query_Match": ai.get("query_match", 0),
-            "Reason": ai.get("reason", ""),
-            "URL": job.get("url", ""),
-            "Description": job.get("description", "")[:3000],
-        })
-    
-    df = pd.DataFrame(rows)
-    
-    if not df.empty:
-        st.write(df.head(20))
-        st.write("Rows before Query filter:", len(df))
-    
-    if not df.empty:
-        st.dataframe(
-            df[["Title", "Country", "Query_Match"]].head(20),
-            use_container_width=True
-        )
-    
-        st.write("Max Query Match:", df["Query_Match"].max())
-        st.write("Average Query Match:", df["Query_Match"].mean())
-    
-        st.write(
-            df[df["Title"].str.contains("analyst", case=False, na=False)]
-            [["Title", "Country"]]
-        )
-    
-        df = df[df["Query_Match"] >= 35]
-        st.session_state.results_df = df
+    if job.get("source") in special_sources:
+        ai["query_match"] = 100
+        ai["relevance"] = 100
+    else:
+        ai["query_match"] = score
 
-
-
-    
-
-
+    rows.append({
+        "Source": job.get("source", ""),
+        "Country": job.get("country", ""),
+        "Title": job.get("title", ""),
+        "Company": job.get("company", ""),
+        "Location": job.get("location", ""),
+        "Relevance": ai.get("relevance", 0),
+        "Visa_Likelihood": ai.get("visa_likelihood", 0),
+        "English_Fit": ai.get("english_fit", 0),
+        "Query_Match": ai.get("query_match", 0),
+        "Reason": ai.get("reason", ""),
+        "URL": job.get("url", ""),
+        "Description": job.get("description", "")[:3000],
+    })
       
 # ============================================================
 # DISPLAY
