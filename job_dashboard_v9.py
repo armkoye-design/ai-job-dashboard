@@ -667,7 +667,7 @@ def fetch_remoteok() -> List[Dict]:
         combined = f"{title} {company} {location} {desc} {' '.join(tags)}".lower()
         if not is_candidate_text(combined):
             continue
-    st.write(title, href)
+        st.write(title, href)
         found.append(normalize_job({
             "source": "RemoteOK",
             "country": "Remote/Global",
