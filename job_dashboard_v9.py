@@ -625,7 +625,10 @@ def fetch_relocate_me() -> List[Dict]:
         seen_urls.add(href)
 
         inferred_country = "Europe"
-        for c in ["Germany", "Netherlands", "United Kingdom", "Portugal", "Spain", "France", "Belgium", "Sweden", "Denmark", "Finland", "Ireland", "Cyprus", "Austria", "Switzerland", "Poland", "Italy", "Norway"]:
+        for c in ["Germany", "Netherlands", "United Kingdom", "Portugal", "Spain", "France", "Belgium", "Sweden", "Denmark", "Finland", "Ireland", "Cyprus", "Austria", "Switzerland", "Poland", "Italy", "Norway", "Canada",
+    "United States",
+    "Australia",
+    "New Zealand",]:
             if c.lower() in combined:
                 inferred_country = c
                 break
@@ -664,7 +667,7 @@ def fetch_remoteok() -> List[Dict]:
         combined = f"{title} {company} {location} {desc} {' '.join(tags)}".lower()
         if not is_candidate_text(combined):
             continue
-
+    st.write(title, href)
         found.append(normalize_job({
             "source": "RemoteOK",
             "country": "Remote/Global",
@@ -677,7 +680,19 @@ def fetch_remoteok() -> List[Dict]:
         }))
 
     return found
-
+    
+    bad_titles = [
+        "expat stories",
+        "visas & immigration",
+        "money & taxes",
+        "working abroad",
+        "read our blog",
+        "cost of living",
+        "relocation companies",
+    ]
+    
+    if title.lower() in bad_titles:
+        continue
 
 def fetch_wwr() -> List[Dict]:
     url = "https://weworkremotely.com/remote-jobs.rss"
