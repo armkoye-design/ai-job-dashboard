@@ -1438,17 +1438,23 @@ if search_clicked:
     
     if not df.empty:
 
-        st.write("Max Query Match:", df["Query_Match"].max())
-        st.write("Average Query Match:", df["Query_Match"].mean())
+    st.write("Max Query Match:", df["Query_Match"].max())
+    st.write("Average Query Match:", df["Query_Match"].mean())
 
-        st.write(
-            df[["Title", "Query_Match"]]
-            .sort_values("Query_Match", ascending=False)
-            .head(20)
-        )
-    
-        # temporary while debugging
-        df = df[df["Query_Match"] >= 0]
+    st.write(
+        df[["Title", "Query_Match"]]
+        .sort_values("Query_Match", ascending=False)
+        .head(20)
+    )
+
+    # temporary while debugging
+    df = df[df["Query_Match"] >= 0]
+
+    # sort best matches first
+    df = df.sort_values(
+        by=["Query_Match", "Visa_Likelihood", "Relevance"],
+        ascending=[False, False, False]
+    )
 
     st.session_state.results_df = df
 
