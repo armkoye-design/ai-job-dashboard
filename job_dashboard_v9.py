@@ -1115,13 +1115,31 @@ if search_clicked:
     # 5) We Work Remotely
     if "We Work Remotely" in selected_sources:
         st.write("Searching We Work Remotely")
+    
         jobs = fetch_wwr()
+    
+        st.write("WWR raw jobs:", len(jobs))
+    
+        if jobs:
+            st.write(jobs[:3])
+    
         for job in jobs:
-            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
             if key in seen_keys:
                 continue
+    
             seen_keys.add(key)
             all_jobs.append(job)
+    
+        st.write("All jobs after WWR:", len(all_jobs))
+            
     # 6) EURES
     if "EURES" in selected_sources:
         st.write("Searching EURES")
