@@ -1091,7 +1091,9 @@ if search_clicked:
         jobs = fetch_relocate_me()
         for job in jobs:
             inferred = infer_country_from_location(job.get("location", ""), fallback_country=job.get("country", ""))
-            if countries and inferred not in countries and inferred not in {"Europe", "Remote/Global"} and job.get("country") not in countries:
+            job_country = job.get("country", "")
+
+            if countries and job_country not in countries:
                 continue
             key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
             if key in seen_keys:
