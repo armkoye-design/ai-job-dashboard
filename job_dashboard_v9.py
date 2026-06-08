@@ -1020,11 +1020,6 @@ if custom_country.strip():
     countries.append(custom_country.strip())
 countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
 
-if any(country in ENGLISH_SPEAKING_COUNTRIES for country in countries):
-    if "SerpAPI Google Jobs" not in selected_sources:
-        selected_sources = list(selected_sources) + ["SerpAPI Google Jobs"]
-    st.success("SerpAPI automatically enabled because you selected at least one English-speaking country.")
-
 st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
 
 if search_clicked:
