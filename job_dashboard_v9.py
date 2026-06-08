@@ -707,7 +707,8 @@ def fetch_wwr() -> List[Dict]:
     for item in root.findall(".//item"):
         title = clean_text(item.findtext("title"))
         link = clean_text(item.findtext("link"))
-        desc = clean_text(item.findtext("description"))
+        raw_desc = item.findtext("description")
+        desc = strip_html(raw_desc)
         combined = f"{title} {desc}".lower()
         if not is_candidate_text(combined):
             continue
@@ -718,7 +719,7 @@ def fetch_wwr() -> List[Dict]:
             "title": title,
             "company": "",
             "location": "Remote",
-            "description": desc[:2500],
+            "description": desc[:500],
             "url": link,
             "tags": [],
         }))
