@@ -1386,8 +1386,12 @@ if search_clicked:
         ]
     
     total = max(len(all_jobs), 1)
+
+    st.write("All jobs entering score block:", len(all_jobs))
     
     for idx, job in enumerate(all_jobs, start=1):
+        if idx <= 3:
+            st.write("Scoring:", job.get("title"))
     
         progress.progress(min(idx / total, 1.0))
     
