@@ -1428,14 +1428,24 @@ if search_clicked:
             "Description": job.get("description", "")[:3000],
         })
     df = pd.DataFrame(rows)
-
+    st.write("Rows count:", len(rows))
+    st.write("DF count:", len(df))
     
     
     if not df.empty:
-       
+
+        st.write("Max Query Match:", df["Query_Match"].max())
+        st.write("Average Query Match:", df["Query_Match"].mean())
+
+        st.write(
+            df[["Title", "Query_Match"]]
+            .sort_values("Query_Match", ascending=False)
+            .head(20)
+        )
+    
         # temporary while debugging
         df = df[df["Query_Match"] >= 0]
-    
+
     st.session_state.results_df = df
 
            
