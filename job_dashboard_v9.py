@@ -681,18 +681,18 @@ def fetch_remoteok() -> List[Dict]:
 
     return found
     
-    bad_titles = [
-        "expat stories",
-        "visas & immigration",
-        "money & taxes",
-        "working abroad",
-        "read our blog",
-        "cost of living",
-        "relocation companies",
-    ]
-    
-    if title.lower() in bad_titles:
-        continue
+        bad_titles = [
+            "expat stories",
+            "visas & immigration",
+            "money & taxes",
+            "working abroad",
+            "read our blog",
+            "cost of living",
+            "relocation companies",
+        ]
+        
+        if title.lower() in bad_titles:
+            continue
 
 def fetch_wwr() -> List[Dict]:
     url = "https://weworkremotely.com/remote-jobs.rss"
