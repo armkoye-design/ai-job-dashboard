@@ -297,9 +297,9 @@ def query_match_score(job: Dict, search_query: str) -> int:
     if not title or not query:
         return 0
 
-    # remove punctuation noise
     title = re.sub(r"[^a-z0-9\s]+", " ", title)
     query = re.sub(r"[^a-z0-9\s]+", " ", query)
+
     title = re.sub(r"\s+", " ", title).strip()
     query = re.sub(r"\s+", " ", query).strip()
 
@@ -310,17 +310,17 @@ def query_match_score(job: Dict, search_query: str) -> int:
         return 95
 
     query_words = [w for w in query.split() if len(w) > 2]
-    if not query_words:
-        return 0
+    title_words = title.split()
 
-    matches = sum(1 for w in query_words if w in title)
+    matches = sum(1 for w in query_words if w in title_words)
 
+    # all words present
     if matches == len(query_words):
         return 90
-    if matches >= max(1, len(query_words) - 1):
-        return 70
-    if matches >= 1:
-        return 25
+
+    # only one word matched
+    if matches == 1:
+        return 35
 
     return 0
 
