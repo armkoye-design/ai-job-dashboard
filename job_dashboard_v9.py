@@ -1451,6 +1451,7 @@ if search_clicked:
             "Description": job.get("description", "")[:3000],
         })
     df = pd.DataFrame(rows)
+    st.write("Fresh DF count:", len(df))
     st.write("Rows count:", len(rows))
     st.write("DF count:", len(df))
     
@@ -1474,7 +1475,7 @@ if search_clicked:
             by=["Query_Match", "Visa_Likelihood", "Relevance"],
             ascending=[False, False, False]
         )
-    
+        st.write("Saving DF count:", len(df))    
         st.session_state.results_df = df
 
            
