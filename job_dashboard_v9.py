@@ -1468,7 +1468,7 @@ if search_clicked:
         )
     
         # temporary while debugging
-        df = df[df["Query_Match"] >= 0]
+        df = df[df["Query_Match"] >= 40]
     
         # sort best matches first
         df = df.sort_values(
