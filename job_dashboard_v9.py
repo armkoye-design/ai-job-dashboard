@@ -1486,7 +1486,7 @@ if search_clicked:
 # ============================================================
 if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
     
-    df = pd.DataFrame(rows)
+df = pd.DataFrame(rows)
 
     st.session_state.results_df = df
 
