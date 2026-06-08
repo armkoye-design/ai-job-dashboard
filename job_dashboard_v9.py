@@ -199,6 +199,13 @@ ENGLISHJOBS_SITES = [
 # ============================================================
 # HELPERS
 # ============================================================
+from bs4 import BeautifulSoup
+
+def strip_html(html):
+    if not html:
+        return ""
+    return BeautifulSoup(html, "html.parser").get_text(" ", strip=True)
+
 def clean_text(value: Optional[str]) -> str:
     if not value:
         return ""
