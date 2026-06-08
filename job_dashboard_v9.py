@@ -606,6 +606,18 @@ def fetch_relocate_me() -> List[Dict]:
 
     for a in soup.find_all("a", href=True):
         title = clean_text(a.get_text(" ", strip=True))
+        bad_titles = [
+        "expat stories",
+        "visas & immigration",
+        "money & taxes",
+        "working abroad",
+        "read our blog",
+        ]
+
+        if title.lower() in bad_titles:
+            continue
+
+        
         href = urljoin(url, a["href"])
         href_l = href.lower()
 
@@ -681,18 +693,7 @@ def fetch_remoteok() -> List[Dict]:
 
     return found
     
-    bad_titles = [
-        "expat stories",
-        "visas & immigration",
-        "money & taxes",
-        "working abroad",
-        "read our blog",
-        "cost of living",
-        "relocation companies",
-    ]
-    
-    if title.lower() in bad_titles:
-        continue
+
 
 def fetch_wwr() -> List[Dict]:
     url = "https://weworkremotely.com/remote-jobs.rss"
@@ -745,6 +746,8 @@ def parse_custom_source(url: str) -> List[Dict]:
 
     for a in soup.find_all("a", href=True):
         title = clean_text(a.get_text(" ", strip=True))
+
+        href = urljoin(url, a["href"])
         href = urljoin(base, a["href"])
         href_l = href.lower()
 
