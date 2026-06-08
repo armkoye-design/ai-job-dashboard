@@ -1050,6 +1050,7 @@ countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
 st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
 
 if search_clicked:
+    st.session_state.results_df = pd.DataFrame()
     if not countries:
         st.warning("Please select at least one country.")
         st.stop()
@@ -1484,7 +1485,10 @@ if search_clicked:
 # DISPLAY
 # ============================================================
 if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
-    df = st.session_state.results_df
+    
+    df = pd.DataFrame(rows)
+
+    st.session_state.results_df = df
 
     st.subheader("Results")
     st.write(f"Jobs found: {len(df)}")
