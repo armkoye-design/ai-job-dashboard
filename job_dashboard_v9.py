@@ -1270,12 +1270,14 @@ if search_clicked:
                 title,
                 fallback_country=job.get("country", "")
             )
-            st.write(
-                "Detected:",
-                job_country,
-                "| Selected:",
-                countries
+            st.write("TITLE:", title)
+
+            job_country = infer_country_from_location(
+                title,
+                fallback_country=job.get("country", "")
             )
+            
+            st.write("DETECTED COUNTRY:", job_country)
             if countries and job_country not in countries:
                     continue
             key = (
