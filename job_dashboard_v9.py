@@ -1232,7 +1232,7 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job) 
     # 9) Other Agencies
-     if "UNICEF" in selected_sources:
+    if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
     
         jobs = fetch_unicef_jobs()
