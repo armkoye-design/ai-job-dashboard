@@ -898,7 +898,7 @@ def fetch_undp_jobs():
 
 def fetch_unicef_jobs():
     return [{
-        "source": "unicef",
+        "source": "UNICEF",
         "country": "International",
         "title": "Visit unicef Careers",
         "company": "UNICEF",
@@ -1458,9 +1458,7 @@ if search_clicked:
     
         if job.get("source") in special_sources:
             ai["relevance"] = 100
-            
-        else:
-            ai["query_match"] = score
+            ai["query_match"] = 100
     
         rows.append({
             "Source": job.get("source", ""),
