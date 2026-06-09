@@ -874,16 +874,37 @@ def fetch_undp_jobs():
     return jobs    
 
 def fetch_unicef_jobs():
-    return [{
-        "source": "UNICEF",
-        "country": "International",
-        "title": "Visit UNICEF Careers",
-        "company": "UNICEF",
-        "location": "Global",
-        "description": "UNICEF vacancies",
-        "url": "https://jobs.unicef.org",
-        "tags": ["UNICEF"],
-    }]
+    jobs = []
+
+    try:
+        url = "https://jobs.unicef.org/en-us/listing/"
+
+        resp = SESSION.get(url, timeout=30)
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        for a in soup.find_all("a", href=True):
+
+            title = clean_text(a.get_text(" ", strip=True))
+            href = urljoin(url, a["href"])
+
+            if len(title) < 10:
+                continue
+
+            jobs.append(normalize_job({
+                "source": "UNICEF",
+                "country": "International",
+                "title": title,
+                "company": "UNICEF",
+                "location": "",
+                "description": "",
+                "url": href,
+                "tags": ["UNICEF"],
+            }))
+
+    except Exception:
+        pass
+
+    return jobs
 def fetch_who_jobs():
     return [{
         "source": "WHO",
@@ -1096,7 +1117,7 @@ if search_clicked:
 
     # 3) Relocate.me
     if "Relocate.me" in selected_sources:
-        st.write("Searching Relocate.me")
+        
         jobs = fetch_relocate_me()
         for job in jobs:
             inferred = infer_country_from_location(job.get("location", ""), fallback_country=job.get("country", ""))
@@ -1112,7 +1133,7 @@ if search_clicked:
 
     # 4) RemoteOK
     if "RemoteOK" in selected_sources:
-        st.write("Searching RemoteOK")
+        
         jobs = fetch_remoteok()
         for job in jobs:
             key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
@@ -1123,7 +1144,7 @@ if search_clicked:
 
     # 5) We Work Remotely
     if "We Work Remotely" in selected_sources:
-        st.write("Searching We Work Remotely")
+       
     
         jobs = fetch_wwr()
     
@@ -1212,6 +1233,7 @@ if search_clicked:
     if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
         jobs = fetch_unicef_jobs()
+        st.write("UNICEF jobs found:", len(jobs))
         
         for job in jobs:
             key = (
@@ -1406,7 +1428,7 @@ if search_clicked:
     
     total = max(len(all_jobs), 1)
 
-    st.write("All jobs entering score block:", len(all_jobs))
+    
     
     for idx, job in enumerate(all_jobs, start=1):
         if idx <= 3:
