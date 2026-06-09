@@ -983,14 +983,53 @@ st.caption("Hybrid job search: Google Jobs + English job boards + remote boards 
 
 openai_client = build_openai_client(SAVED_OPENAI_KEY)
 
+
+    st.subheader("Search")
+    query = st.text_input("Search keywords", ROLE_QUERY_DEFAULT)
+    selected_countries = st.multiselect(
+        "Choose countries",
+        options=DEFAULT_COUNTRIES,
+        default=[],
+    )
+    custom_country = st.text_input(
+        "Add custom country",
+        placeholder="Example: Germany, France, Sweden, Australia",
+    )
+    search_clicked = st.button("🔍 Search Jobs")
+
+
+    st.subheader("How it works")
+    st.write("Selected countries are expanded into city searches behind the scenes.")
+    st.write("Job locations like Toronto are mapped back to Canada automatically.")
+    st.write("Custom source URLs belong in the sidebar.")
+
+countries = list(selected_countries)
+if custom_country.strip():
+    countries.append(custom_country.strip())
+countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
+
+
+st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
+
+if search_clicked:
+    st.session_state.results_df = pd.DataFrame()
+    if not countries:
+        st.warning("Please select at least one country.")
+        st.stop()
+
+    if not selected_sources:
+        st.warning("Please select at least one job source.")
+        st.stop()
+    all_jobs: List[Dict] = []
+    seen_keys = set()
+    
+    
 st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
     "Choose job sources",
     options=DEFAULT_SOURCES,
     default=[],
 )
-
-
 
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
@@ -1042,46 +1081,7 @@ include_remote_jobs = st.sidebar.checkbox(
     value=False
 )
 
-left, right = st.columns([2, 1])
-with left:
-    st.subheader("Search")
-    query = st.text_input("Search keywords", ROLE_QUERY_DEFAULT)
-    selected_countries = st.multiselect(
-        "Choose countries",
-        options=DEFAULT_COUNTRIES,
-        default=[],
-    )
-    custom_country = st.text_input(
-        "Add custom country",
-        placeholder="Example: Germany, France, Sweden, Australia",
-    )
-    search_clicked = st.button("🔍 Search Jobs")
 
-with right:
-    st.subheader("How it works")
-    st.write("Selected countries are expanded into city searches behind the scenes.")
-    st.write("Job locations like Toronto are mapped back to Canada automatically.")
-    st.write("Custom source URLs belong in the sidebar.")
-
-countries = list(selected_countries)
-if custom_country.strip():
-    countries.append(custom_country.strip())
-countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
-
-
-st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
-
-if search_clicked:
-    st.session_state.results_df = pd.DataFrame()
-    if not countries:
-        st.warning("Please select at least one country.")
-        st.stop()
-
-    if not selected_sources:
-        st.warning("Please select at least one job source.")
-        st.stop()
-    all_jobs: List[Dict] = []
-    seen_keys = set()
 
     # 1) SerpAPI Google Jobs
     if "SerpAPI Google Jobs" in selected_sources:
@@ -1547,17 +1547,6 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             hide_index=True,
         )
 
-        st.subheader("Clickable job links")
-        for _, row in df.iterrows():
-            st.markdown(
-                f"""
-**{row['Title']}**  
-{row['Company']} — {row['Location']}  
-Source: {row['Source']} | Country: {row['Country']}  
-Visa: {row['Visa_Likelihood']} | Relevance: {row['Relevance']} | English: {row['English_Fit']}  
-👉 {row['URL']}
-"""
-            )
 
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button(
