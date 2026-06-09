@@ -983,66 +983,64 @@ st.caption("Hybrid job search: Google Jobs + English job boards + remote boards 
 
 openai_client = build_openai_client(SAVED_OPENAI_KEY)
 
+        
+st.sidebar.header("Sources")
+selected_sources = st.sidebar.multiselect(
+    "Choose job sources",
+    options=DEFAULT_SOURCES,
+    default=[],
+)
 
-        
-        
-    st.sidebar.header("Sources")
-    selected_sources = st.sidebar.multiselect(
-        "Choose job sources",
-        options=DEFAULT_SOURCES,
-        default=[],
-    )
+custom_source_url = st.sidebar.text_input(
+    "Add custom source URL",
+    placeholder="https://example.com/jobs",
+    help="Use this for extra websites only.",
+)
+
+st.sidebar.divider()
+st.sidebar.header("Filters")
+organization_types = st.sidebar.multiselect(
+    "Organization Type",
+    [
+        "Private Sector",
+        "UN System",
+        "International NGO",
+        "Development Bank",
+        "European Union",
+    ],
+    default=[],
+)
+
+if "UN System" in organization_types:
+        for src in [
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "UNHCR",
+            "WHO",
+            "WFP",
+            "IOM",
+        ]:
+            if src not in selected_sources:
+                selected_sources.append(src)
     
-    custom_source_url = st.sidebar.text_input(
-        "Add custom source URL",
-        placeholder="https://example.com/jobs",
-        help="Use this for extra websites only.",
-    )
-    
-    st.sidebar.divider()
-    st.sidebar.header("Filters")
-    organization_types = st.sidebar.multiselect(
-        "Organization Type",
-        [
-            "Private Sector",
-            "UN System",
-            "International NGO",
-            "Development Bank",
-            "European Union",
-        ],
-        default=[],
-    )
-    
-    if "UN System" in organization_types:
-            for src in [
-                "UN Careers",
-                "UNDP",
-                "UNICEF",
-                "UNHCR",
-                "WHO",
-                "WFP",
-                "IOM",
-            ]:
-                if src not in selected_sources:
-                    selected_sources.append(src)
-        
-    if "Development Bank" in organization_types:
-            for src in [
-                "World Bank",
-                "EBRD",
-            ]:
-                if src not in selected_sources:
-                    selected_sources.append(src)
-    
-    min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
-    min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
-    min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
-    only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
-    include_remote_jobs = st.sidebar.checkbox(
-        "Include Remote Jobs",
-        value=False
-    )
-    
+if "Development Bank" in organization_types:
+        for src in [
+            "World Bank",
+            "EBRD",
+        ]:
+            if src not in selected_sources:
+                selected_sources.append(src)
+
+min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
+min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
+min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
+only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
+include_remote_jobs = st.sidebar.checkbox(
+    "Include Remote Jobs",
+    value=False
+)
+
 st.subheader("Search")
 query = st.text_input("Search keywords", ROLE_QUERY_DEFAULT)
 selected_countries = st.multiselect(
@@ -1070,17 +1068,17 @@ if custom_country.strip():
     
     st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
     
-    if search_clicked:
-            st.session_state.results_df = pd.DataFrame()
-            if not countries:
-                st.warning("Please select at least one country.")
-                st.stop()
-            
-            if not selected_sources:
-                st.warning("Please select at least one job source.")
-                st.stop()
-            all_jobs: List[Dict] = []
-            seen_keys = set()
+if search_clicked:
+        st.session_state.results_df = pd.DataFrame()
+        if not countries:
+            st.warning("Please select at least one country.")
+            st.stop()
+        
+        if not selected_sources:
+            st.warning("Please select at least one job source.")
+            st.stop()
+        all_jobs: List[Dict] = []
+        seen_keys = set()
     
     # 1) SerpAPI Google Jobs
     if "SerpAPI Google Jobs" in selected_sources:
@@ -1505,68 +1503,68 @@ if custom_country.strip():
 # ============================================================
 # DISPLAY
 # ============================================================
-if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
-
-
-    df = st.session_state.results_df
-
-    if not df.empty:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.metric("Avg Visa Likelihood", f"{df['Visa_Likelihood'].mean():.1f}")
-        with c2:
-            st.metric("Avg Relevance", f"{df['Relevance'].mean():.1f}")
-        with c3:
-            st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
-            
-        df["Open"] = df["URL"]
-    
-        st.dataframe(
-            df[[
-                "Source",
-                "Country",
-                "Title",
-                "Company",
-                "Location",
-                "Relevance",
-                "Visa_Likelihood",
-                "English_Fit",
-                "Query_Match",
-                "Reason",
-                "Open"
-            ]],
-            column_config={
-                "Open": st.column_config.LinkColumn(
-                    "Open Job"
-                )
-            },
-            use_container_width=True,
-            hide_index=True,
-        )
+    if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
     
     
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            "Download results as CSV",
-            data=csv,
-            file_name="job_results.csv",
-            mime="text/csv",
-        )
+        df = st.session_state.results_df
     
-        try:
-            from io import BytesIO
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                df.to_excel(writer, index=False, sheet_name="Jobs")
-            st.download_button(
-                "Download results as Excel",
-                data=output.getvalue(),
-                file_name="job_results.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        if not df.empty:
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.metric("Avg Visa Likelihood", f"{df['Visa_Likelihood'].mean():.1f}")
+            with c2:
+                st.metric("Avg Relevance", f"{df['Relevance'].mean():.1f}")
+            with c3:
+                st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
+                
+            df["Open"] = df["URL"]
+        
+            st.dataframe(
+                df[[
+                    "Source",
+                    "Country",
+                    "Title",
+                    "Company",
+                    "Location",
+                    "Relevance",
+                    "Visa_Likelihood",
+                    "English_Fit",
+                    "Query_Match",
+                    "Reason",
+                    "Open"
+                ]],
+                column_config={
+                    "Open": st.column_config.LinkColumn(
+                        "Open Job"
+                    )
+                },
+                use_container_width=True,
+                hide_index=True,
             )
-        except Exception:
-            pass
+        
+        
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                "Download results as CSV",
+                data=csv,
+                file_name="job_results.csv",
+                mime="text/csv",
+            )
+        
+            try:
+                from io import BytesIO
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                    df.to_excel(writer, index=False, sheet_name="Jobs")
+                st.download_button(
+                    "Download results as Excel",
+                    data=output.getvalue(),
+                    file_name="job_results.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            except Exception:
+                pass
+        else:
+            st.warning("No jobs matched your filters.")
     else:
-        st.warning("No jobs matched your filters.")
-else:
-    st.info("Choose sources and countries, then click Search Jobs.")
+        st.info("Choose sources and countries, then click Search Jobs.")
