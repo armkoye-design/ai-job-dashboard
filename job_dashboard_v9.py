@@ -897,60 +897,16 @@ def fetch_undp_jobs():
     return jobs    
 
 def fetch_unicef_jobs():
-    jobs = []
-    BAD_TITLES = {
-        "skip to main content",
-        "visit unicef global",
-        "unicef default logo",
-        "explore unicef",
-        "about unicef",
-        "where we work",
-        "leadership recruitment",
-        "diversity and inclusion",
-        "working in emergencies",
-        "explore careers",
-    }
-    try:
-        url = "https://jobs.unicef.org/en-us/listing/"
-
-        resp = SESSION.get(url, timeout=30)
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        for a in soup.find_all("a", href=True):
-
-            title = clean_text(a.get_text(" ", strip=True))
-            href = urljoin(url, a["href"])
-
-            if len(title) < 10:
-                continue
-                
-            title_l = title.lower().strip()
-
-            if title_l in BAD_TITLES:
-                continue
-            if "/job/" not in href.lower():
-                continue
-                country = "International"
-
-                for c in COUNTRIES:
-                    if c.lower() in title.lower():
-                        country = c
-                        break
-            jobs.append(normalize_job({
-                "source": "UNICEF",
-                "country": country,
-                "title": title,
-                "company": "UNICEF",
-                "location": "",
-                "description": "",
-                "url": href,
-                "tags": ["UNICEF"],
-            }))
-
-    except Exception:
-        pass
-
-    return jobs
+    return [{
+        "source": "unicef",
+        "country": "International",
+        "title": "Visit unicef Careers",
+        "company": "UNICEF",
+        "location": "Global",
+        "description": "UNICEF vacancies",
+        "url": "https://careers.unicef.org",
+        "tags": ["UNICEF"],
+    }]
 def fetch_who_jobs():
     return [{
         "source": "WHO",
