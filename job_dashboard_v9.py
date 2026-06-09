@@ -1456,6 +1456,7 @@ if search_clicked:
     st.write("Rows count:", len(rows))
     st.write("DF count:", len(df))
     
+    df = pd.DataFrame(rows)
     
     if not df.empty:
 
@@ -1486,9 +1487,8 @@ if search_clicked:
 # ============================================================
 if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
     
-df = pd.DataFrame(rows)
 
-    st.session_state.results_df = df
+    df = st.session_state.results_df
 
     st.subheader("Results")
     st.write(f"Jobs found: {len(df)}")
