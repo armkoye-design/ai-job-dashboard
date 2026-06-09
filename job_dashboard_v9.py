@@ -1012,483 +1012,483 @@ if custom_country.strip():
     st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
     
     if search_clicked:
-        st.session_state.results_df = pd.DataFrame()
-        if not countries:
-            st.warning("Please select at least one country.")
-            st.stop()
-        
-        if not selected_sources:
-            st.warning("Please select at least one job source.")
-            st.stop()
-        all_jobs: List[Dict] = []
-        seen_keys = set()
-    
-    
-st.sidebar.header("Sources")
-selected_sources = st.sidebar.multiselect(
-    "Choose job sources",
-    options=DEFAULT_SOURCES,
-    default=[],
-)
-
-custom_source_url = st.sidebar.text_input(
-    "Add custom source URL",
-    placeholder="https://example.com/jobs",
-    help="Use this for extra websites only.",
-)
-
-st.sidebar.divider()
-st.sidebar.header("Filters")
-organization_types = st.sidebar.multiselect(
-    "Organization Type",
-    [
-        "Private Sector",
-        "UN System",
-        "International NGO",
-        "Development Bank",
-        "European Union",
-    ],
-    default=[],
-)
-
-if "UN System" in organization_types:
-        for src in [
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "UNHCR",
-            "WHO",
-            "WFP",
-            "IOM",
-        ]:
-            if src not in selected_sources:
-                selected_sources.append(src)
-    
-if "Development Bank" in organization_types:
-        for src in [
-            "World Bank",
-            "EBRD",
-        ]:
-            if src not in selected_sources:
-                selected_sources.append(src)
-
-min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
-min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
-min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
-only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
-include_remote_jobs = st.sidebar.checkbox(
-    "Include Remote Jobs",
-    value=False
-)
-
-
-
-# 1) SerpAPI Google Jobs
-if "SerpAPI Google Jobs" in selected_sources:
-    if not SAVED_SERPAPI_KEY.strip() or SAVED_SERPAPI_KEY.startswith("PASTE_YOUR_SERPAPI_KEY_HERE"):
-        st.warning("SerpAPI key is missing in the script. Google Jobs will be skipped.")
-    else:
-        for country in countries:
+            st.session_state.results_df = pd.DataFrame()
+            if not countries:
+                st.warning("Please select at least one country.")
+                st.stop()
             
-            serp_jobs = fetch_serpapi_jobs(query, country, SAVED_SERPAPI_KEY.strip())
-            for job in serp_jobs:
-                job_country = infer_country_from_location(job.get("location", ""), fallback_country=country)
-                if not country_matches_selected(job_country, countries):
-                    continue
-                job["country"] = job_country or country
+            if not selected_sources:
+                st.warning("Please select at least one job source.")
+                st.stop()
+            all_jobs: List[Dict] = []
+            seen_keys = set()
+        
+        
+    st.sidebar.header("Sources")
+    selected_sources = st.sidebar.multiselect(
+        "Choose job sources",
+        options=DEFAULT_SOURCES,
+        default=[],
+    )
+    
+    custom_source_url = st.sidebar.text_input(
+        "Add custom source URL",
+        placeholder="https://example.com/jobs",
+        help="Use this for extra websites only.",
+    )
+    
+    st.sidebar.divider()
+    st.sidebar.header("Filters")
+    organization_types = st.sidebar.multiselect(
+        "Organization Type",
+        [
+            "Private Sector",
+            "UN System",
+            "International NGO",
+            "Development Bank",
+            "European Union",
+        ],
+        default=[],
+    )
+    
+    if "UN System" in organization_types:
+            for src in [
+                "UN Careers",
+                "UNDP",
+                "UNICEF",
+                "UNHCR",
+                "WHO",
+                "WFP",
+                "IOM",
+            ]:
+                if src not in selected_sources:
+                    selected_sources.append(src)
+        
+    if "Development Bank" in organization_types:
+            for src in [
+                "World Bank",
+                "EBRD",
+            ]:
+                if src not in selected_sources:
+                    selected_sources.append(src)
+    
+    min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
+    min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
+    min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
+    only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
+    include_remote_jobs = st.sidebar.checkbox(
+        "Include Remote Jobs",
+        value=False
+    )
+    
+    
+    
+    # 1) SerpAPI Google Jobs
+    if "SerpAPI Google Jobs" in selected_sources:
+        if not SAVED_SERPAPI_KEY.strip() or SAVED_SERPAPI_KEY.startswith("PASTE_YOUR_SERPAPI_KEY_HERE"):
+            st.warning("SerpAPI key is missing in the script. Google Jobs will be skipped.")
+        else:
+            for country in countries:
+                
+                serp_jobs = fetch_serpapi_jobs(query, country, SAVED_SERPAPI_KEY.strip())
+                for job in serp_jobs:
+                    job_country = infer_country_from_location(job.get("location", ""), fallback_country=country)
+                    if not country_matches_selected(job_country, countries):
+                        continue
+                    job["country"] = job_country or country
+                    key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+                    if key in seen_keys:
+                        continue
+                    seen_keys.add(key)
+                    all_jobs.append(job)
+    
+    # 2) EnglishJobs network
+    if "EnglishJobs.de Network" in selected_sources:
+        for site in ENGLISHJOBS_SITES:
+            if site["country"] not in countries:
+                continue
+          
+            jobs = scrape_html_jobs_from_site(site["country"], site["base"], site["seeds"])
+            for job in jobs:
                 key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
                 if key in seen_keys:
                     continue
                 seen_keys.add(key)
                 all_jobs.append(job)
-
-# 2) EnglishJobs network
-if "EnglishJobs.de Network" in selected_sources:
-    for site in ENGLISHJOBS_SITES:
-        if site["country"] not in countries:
-            continue
-      
-        jobs = scrape_html_jobs_from_site(site["country"], site["base"], site["seeds"])
+    
+    # 3) Relocate.me
+    if "Relocate.me" in selected_sources:
+        
+        jobs = fetch_relocate_me()
+        for job in jobs:
+            inferred = infer_country_from_location(job.get("location", ""), fallback_country=job.get("country", ""))
+            job_country = job.get("country", "")
+    
+            if countries and job_country not in countries:
+                continue
+            key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    # 4) RemoteOK
+    if "RemoteOK" in selected_sources:
+        
+        jobs = fetch_remoteok()
         for job in jobs:
             key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
             if key in seen_keys:
                 continue
             seen_keys.add(key)
             all_jobs.append(job)
-
-# 3) Relocate.me
-if "Relocate.me" in selected_sources:
     
-    jobs = fetch_relocate_me()
-    for job in jobs:
-        inferred = infer_country_from_location(job.get("location", ""), fallback_country=job.get("country", ""))
-        job_country = job.get("country", "")
-
-        if countries and job_country not in countries:
-            continue
-        key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
-        if key in seen_keys:
-            continue
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-# 4) RemoteOK
-if "RemoteOK" in selected_sources:
+    # 5) We Work Remotely
+    if "We Work Remotely" in selected_sources:
+       
     
-    jobs = fetch_remoteok()
-    for job in jobs:
-        key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
-        if key in seen_keys:
-            continue
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-# 5) We Work Remotely
-if "We Work Remotely" in selected_sources:
-   
-
-    jobs = fetch_wwr()
-
-    
-
-    
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
+        jobs = fetch_wwr()
     
         
-# 6) EURES
-if "EURES" in selected_sources:
     
-
-    jobs = fetch_eures_jobs(query, countries)
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-# 7) UN Careers
-if "UN Careers" in selected_sources:
-    
-
-    jobs = fetch_un_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-# 8) UNDP
-if "UNDP" in selected_sources:
-    
-
-    jobs = fetch_undp_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job) 
-# 9) Other Agencies
-if "UNICEF" in selected_sources:
-    
-
-    jobs = fetch_unicef_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-    
-    
-
-if "WHO" in selected_sources:
-   
-
-    jobs = fetch_who_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-
-if "UNHCR" in selected_sources:
-   
-
-    jobs = fetch_unhcr_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "WFP" in selected_sources:
-    
-
-    jobs = fetch_wfp_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "IOM" in selected_sources:
- 
-
-    jobs = fetch_iom_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "WORLDBANK" in selected_sources:
-  
-
-    jobs = fetch_worldbank_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-
-if "EBRD" in selected_sources:
-    
-
-    jobs = fetch_ebrd_jobs()
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
         
-
-# 9) Custom source URL
-if custom_source_url.strip():
     
-
-    jobs = parse_custom_source(custom_source_url.strip())
-
-    for job in jobs:
-        key = (
-            job.get("source"),
-            job.get("title"),
-            job.get("company"),
-            job.get("location"),
-            job.get("url"),
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+        
+            
+    # 6) EURES
+    if "EURES" in selected_sources:
+        
+    
+        jobs = fetch_eures_jobs(query, countries)
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    # 7) UN Careers
+    if "UN Careers" in selected_sources:
+        
+    
+        jobs = fetch_un_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    # 8) UNDP
+    if "UNDP" in selected_sources:
+        
+    
+        jobs = fetch_undp_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job) 
+    # 9) Other Agencies
+    if "UNICEF" in selected_sources:
+        
+    
+        jobs = fetch_unicef_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+        
+        
+    
+    if "WHO" in selected_sources:
+       
+    
+        jobs = fetch_who_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    
+    if "UNHCR" in selected_sources:
+       
+    
+        jobs = fetch_unhcr_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "WFP" in selected_sources:
+        
+    
+        jobs = fetch_wfp_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "IOM" in selected_sources:
+     
+    
+        jobs = fetch_iom_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "WORLDBANK" in selected_sources:
+      
+    
+        jobs = fetch_worldbank_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+    
+    
+    if "EBRD" in selected_sources:
+        
+    
+        jobs = fetch_ebrd_jobs()
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+            
+    
+    # 9) Custom source URL
+    if custom_source_url.strip():
+        
+    
+        jobs = parse_custom_source(custom_source_url.strip())
+    
+        for job in jobs:
+            key = (
+                job.get("source"),
+                job.get("title"),
+                job.get("company"),
+                job.get("location"),
+                job.get("url"),
+            )
+    
+            if key in seen_keys:
+                continue
+    
+            seen_keys.add(key)
+            all_jobs.append(job)
+     # 10) Score jobs
+    rows = []
+    progress = st.progress(0)
+    if not include_remote_jobs:
+        filtered_jobs = []
+    
+    for job in all_jobs:
+        location = str(job.get("location", "")).lower()
+        country = str(job.get("country", "")).lower()
+    
+        is_remote = (
+            "remote" in location
+            or "remote" in country
+            or country == "remote/global"
         )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
- # 10) Score jobs
-rows = []
-progress = st.progress(0)
-if not include_remote_jobs:
-    filtered_jobs = []
-
-for job in all_jobs:
-    location = str(job.get("location", "")).lower()
-    country = str(job.get("country", "")).lower()
-
-    is_remote = (
-        "remote" in location
-        or "remote" in country
-        or country == "remote/global"
-    )
-
-    if not is_remote:
-        filtered_jobs.append(job)
-
-all_jobs = filtered_jobs
-
-
-
-#if not include_remote_jobs:
- #   all_jobs = [
- #       job for job in all_jobs
-  #      if job.get("country") != "Remote/Global"
-  #  ]
-
-total = max(len(all_jobs), 1)
-
-
-
-for idx, job in enumerate(all_jobs, start=1):
-    if idx <= 3:
-        st.write("Scoring:", job.get("title"))
-
-    progress.progress(min(idx / total, 1.0))
-
-    score = query_match_score(job, query)
-    ai = heuristic_score(job)
-
-    special_sources = [
-        "UN Careers",
-        "UNDP",
-        "UNICEF",
-        "WHO",
-        "UNHCR",
-        "WFP",
-        "IOM",
-        "World Bank",
-        "EBRD",
-        "EURES",
-    ]
-
-    if job.get("source") in special_sources:
-        ai["relevance"] = 100
-        ai["query_match"] = 100
-
-    rows.append({
-        "Source": job.get("source", ""),
-        "Country": job.get("country", ""),
-        "Title": job.get("title", ""),
-        "Company": job.get("company", ""),
-        "Location": job.get("location", ""),
-        "Relevance": ai.get("relevance", 0),
-        "Visa_Likelihood": ai.get("visa_likelihood", 0),
-        "English_Fit": ai.get("english_fit", 0),
-        "Query_Match": ai.get("query_match", 0),
-        "Reason": ai.get("reason", ""),
-        "URL": job.get("url", ""),
-        "Description": job.get("description", "")[:3000],
-    })
-df = pd.DataFrame(rows)
-
-
-
-
-df = pd.DataFrame(rows)
-
-if not df.empty:
-
-   
-
-    st.write(
-        df[["Title", "Query_Match"]]
-        .sort_values("Query_Match", ascending=False)
-        .head(20)
-    )
+    
+        if not is_remote:
+            filtered_jobs.append(job)
+    
+    all_jobs = filtered_jobs
+    
+    
+    
+    #if not include_remote_jobs:
+     #   all_jobs = [
+     #       job for job in all_jobs
+      #      if job.get("country") != "Remote/Global"
+      #  ]
+    
+    total = max(len(all_jobs), 1)
+    
+    
+    
+    for idx, job in enumerate(all_jobs, start=1):
+        if idx <= 3:
+            st.write("Scoring:", job.get("title"))
+    
+        progress.progress(min(idx / total, 1.0))
+    
+        score = query_match_score(job, query)
+        ai = heuristic_score(job)
+    
+        special_sources = [
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "WHO",
+            "UNHCR",
+            "WFP",
+            "IOM",
+            "World Bank",
+            "EBRD",
+            "EURES",
+        ]
+    
+        if job.get("source") in special_sources:
+            ai["relevance"] = 100
+            ai["query_match"] = 100
+    
+        rows.append({
+            "Source": job.get("source", ""),
+            "Country": job.get("country", ""),
+            "Title": job.get("title", ""),
+            "Company": job.get("company", ""),
+            "Location": job.get("location", ""),
+            "Relevance": ai.get("relevance", 0),
+            "Visa_Likelihood": ai.get("visa_likelihood", 0),
+            "English_Fit": ai.get("english_fit", 0),
+            "Query_Match": ai.get("query_match", 0),
+            "Reason": ai.get("reason", ""),
+            "URL": job.get("url", ""),
+            "Description": job.get("description", "")[:3000],
+        })
+    df = pd.DataFrame(rows)
+    
+    
+    
+    
+    df = pd.DataFrame(rows)
+    
+    if not df.empty:
+    
+       
+    
+        st.write(
+            df[["Title", "Query_Match"]]
+            .sort_values("Query_Match", ascending=False)
+            .head(20)
+        )
 
     # temporary while debugging
     df = df[df["Query_Match"] >= 40]
