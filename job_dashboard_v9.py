@@ -982,10 +982,23 @@ st.caption("Hybrid job search: Google Jobs + English job boards + remote boards 
 
 openai_client = build_openai_client(SAVED_OPENAI_KEY)
 
+st.sidebar.header("Sources")
+selected_sources = st.sidebar.multiselect(
+    "Choose job sources",
+    options=DEFAULT_SOURCES,
+    default=[],
+)
+
+custom_source_url = st.sidebar.text_input(
+    "Add custom source URL",
+    placeholder="https://example.com/jobs",
+    help="Use this for extra websites only.",
+)
+
+
 st.sidebar.divider()
 st.sidebar.header("Search")
         
-st.sidebar.header("Search")
 
 query = st.sidebar.text_input(
     "Search keywords",
