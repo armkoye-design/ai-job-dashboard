@@ -875,7 +875,18 @@ def fetch_undp_jobs():
 
 def fetch_unicef_jobs():
     jobs = []
-
+    BAD_TITLES = {
+        "skip to main content",
+        "visit unicef global",
+        "unicef default logo",
+        "explore unicef",
+        "about unicef",
+        "where we work",
+        "leadership recruitment",
+        "diversity and inclusion",
+        "working in emergencies",
+        "explore careers",
+    }
     try:
         url = "https://jobs.unicef.org/en-us/listing/"
 
@@ -889,7 +900,13 @@ def fetch_unicef_jobs():
 
             if len(title) < 10:
                 continue
+                
+            title_l = title.lower().strip()
 
+            if title_l in BAD_TITLES:
+                continue
+            if "/job/" not in href.lower():
+                continue
             jobs.append(normalize_job({
                 "source": "UNICEF",
                 "country": "International",
@@ -1453,8 +1470,8 @@ if search_clicked:
         ]
     
         if job.get("source") in special_sources:
-            ai["query_match"] = 100
             ai["relevance"] = 100
+            
         else:
             ai["query_match"] = score
     
