@@ -938,7 +938,7 @@ def fetch_unicef_jobs():
                         break
             jobs.append(normalize_job({
                 "source": "UNICEF",
-                "country": "country",
+                "country": country,
                 "title": title,
                 "company": "UNICEF",
                 "location": "",
