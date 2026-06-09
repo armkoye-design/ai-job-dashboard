@@ -907,9 +907,15 @@ def fetch_unicef_jobs():
                 continue
             if "/job/" not in href.lower():
                 continue
+                country = "International"
+
+                for c in COUNTRIES:
+                    if c.lower() in title.lower():
+                        country = c
+                        break
             jobs.append(normalize_job({
                 "source": "UNICEF",
-                "country": "International",
+                "country": "country",
                 "title": title,
                 "company": "UNICEF",
                 "location": "",
