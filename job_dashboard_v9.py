@@ -1129,8 +1129,7 @@ if search_clicked:
     
         
     
-        if jobs:
-            st.write(jobs[:3])
+        
     
         for job in jobs:
             key = (
