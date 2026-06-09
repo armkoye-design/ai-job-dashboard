@@ -1147,7 +1147,7 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
     
-        st.write("All jobs after WWR:", len(all_jobs))
+        
             
     # 6) EURES
     if "EURES" in selected_sources:
@@ -1397,7 +1397,7 @@ if search_clicked:
 
         all_jobs = filtered_jobs
 
-    st.write("Jobs after remote filter:", len(all_jobs))
+    
     
     #if not include_remote_jobs:
      #   all_jobs = [
@@ -1452,9 +1452,9 @@ if search_clicked:
             "Description": job.get("description", "")[:3000],
         })
     df = pd.DataFrame(rows)
-    st.write("Fresh DF count:", len(df))
-    st.write("Rows count:", len(rows))
-    st.write("DF count:", len(df))
+   
+    
+   
     
     df = pd.DataFrame(rows)
     
@@ -1477,7 +1477,7 @@ if search_clicked:
             by=["Query_Match", "Visa_Likelihood", "Relevance"],
             ascending=[False, False, False]
         )
-        st.write("Saving DF count:", len(df))    
+          
         st.session_state.results_df = df
 
            
