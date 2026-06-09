@@ -982,6 +982,7 @@ st.caption("Hybrid job search: Google Jobs + English job boards + remote boards 
 
 openai_client = build_openai_client(SAVED_OPENAI_KEY)
 
+st.sidebar.header("Search")
 st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
     "Choose job sources",
@@ -997,8 +998,7 @@ custom_source_url = st.sidebar.text_input(
 
 
 st.sidebar.divider()
-st.sidebar.header("Search")
-        
+
 
 query = st.sidebar.text_input(
     "Search keywords",
@@ -1016,7 +1016,7 @@ custom_country = st.sidebar.text_input(
     placeholder="Example: Germany, France, Sweden, Australia"
 )
 
-search_clicked = st.sidebar.button("🔍 Search Jobs")
+
 
 
 organization_types = st.sidebar.multiselect(
@@ -1072,7 +1072,7 @@ if custom_country.strip():
 
 countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
 
-
+search_clicked = st.sidebar.button("🔍 Search Jobs")
     
 if search_clicked:
         st.session_state.results_df = pd.DataFrame()
