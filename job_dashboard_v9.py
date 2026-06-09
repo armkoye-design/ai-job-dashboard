@@ -1264,14 +1264,13 @@ if search_clicked:
                 title,
                 fallback_country=job.get("country", "")
             )
-        
+            st.write(
+                "Detected:",
+                job_country,
+                "| Selected:",
+                countries
+            )
             if countries and job_country not in countries:
-                st.write(
-                    "Detected:",
-                    job_country,
-                    "| Selected:",
-                    countries
-                )
                     continue
             key = (
                 job.get("source"),
