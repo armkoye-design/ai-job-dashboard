@@ -1276,33 +1276,12 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job) 
     # 9) Other Agencies
-    if "UNICEF" in selected_sources:
+     if "UNICEF" in selected_sources:
         st.write("Searching UNICEF")
+    
         jobs = fetch_unicef_jobs()
-        st.write("UNICEF jobs found:", len(jobs))
-        if jobs:
-            st.write("First UNICEF job:")
-            st.write(jobs[0]["title"])
-            st.write(jobs[0]["url"])
-            
+    
         for job in jobs:
-            title = job.get("title", "")
-
-            # extract country from title
-            job_country = infer_country_from_location(
-                title,
-                fallback_country=job.get("country", "")
-            )
-            st.write("TITLE:", title)
-
-            job_country = infer_country_from_location(
-                title,
-                fallback_country=job.get("country", "")
-            )
-            
-            st.write("DETECTED COUNTRY:", job_country)
-            if countries and job_country not in countries:
-                    continue
             key = (
                 job.get("source"),
                 job.get("title"),
@@ -1310,8 +1289,10 @@ if search_clicked:
                 job.get("location"),
                 job.get("url"),
             )
+    
             if key in seen_keys:
                 continue
+    
             seen_keys.add(key)
             all_jobs.append(job)
         
