@@ -1571,5 +1571,5 @@ if not df.empty:
         pass
 else:
     st.warning("No jobs matched your filters.")
-    else:
-        st.info("Choose sources and countries, then click Search Jobs.")
+else:
+    st.info("Choose sources and countries, then click Search Jobs.")
