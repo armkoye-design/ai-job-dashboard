@@ -1403,12 +1403,12 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
      # 10) Score jobs
-st.write("EnglishJobs selected:", "EnglishJobs.de Network" in selected_sources)
-st.write("Relocate selected:", "Relocate.me" in selected_sources)
-st.write("RemoteOK selected:", "RemoteOK" in selected_sources)
-st.write("WWR selected:", "We Work Remotely" in selected_sources)
-
-st.write("Total jobs before scoring:", len(all_jobs))
+    st.write("EnglishJobs selected:", "EnglishJobs.de Network" in selected_sources)
+    st.write("Relocate selected:", "Relocate.me" in selected_sources)
+    st.write("RemoteOK selected:", "RemoteOK" in selected_sources)
+    st.write("WWR selected:", "We Work Remotely" in selected_sources)
+    
+    st.write("Total jobs before scoring:", len(all_jobs))
     rows = []
     progress = st.progress(0)
     if not include_remote_jobs:
