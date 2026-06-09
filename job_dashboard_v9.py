@@ -16,8 +16,7 @@ from openai import OpenAI
 # ============================================================
 st.set_page_config(
     page_title="AI Job Intelligence Dashboard",
-    page_icon="🧠",
-    layout="wide",
+    layout="wide"
 )
 
 # ============================================================
@@ -999,6 +998,20 @@ custom_source_url = st.sidebar.text_input(
 
 st.sidebar.divider()
 st.sidebar.header("Filters")
+
+query = st.text_input("Search keywords", ROLE_QUERY_DEFAULT)
+selected_countries = st.multiselect(
+    "Choose countries",
+    options=DEFAULT_COUNTRIES,
+    default=[],
+)
+custom_country = st.text_input(
+    "Add custom country",
+    placeholder="Example: Germany, France, Sweden, Australia",
+)
+search_clicked = st.button("🔍 Search Jobs")
+
+
 organization_types = st.sidebar.multiselect(
     "Organization Type",
     [
@@ -1041,24 +1054,9 @@ include_remote_jobs = st.sidebar.checkbox(
     value=False
 )
 
-st.subheader("Search")
-query = st.text_input("Search keywords", ROLE_QUERY_DEFAULT)
-selected_countries = st.multiselect(
-    "Choose countries",
-    options=DEFAULT_COUNTRIES,
-    default=[],
-)
-custom_country = st.text_input(
-    "Add custom country",
-    placeholder="Example: Germany, France, Sweden, Australia",
-)
-search_clicked = st.button("🔍 Search Jobs")
 
 
-st.subheader("How it works")
-st.write("Selected countries are expanded into city searches behind the scenes.")
-st.write("Job locations like Toronto are mapped back to Canada automatically.")
-st.write("Custom source URLs belong in the sidebar.")
+
 
 countries = list(selected_countries)
 
@@ -1067,7 +1065,7 @@ if custom_country.strip():
 
 countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
 
-st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
+
     
 if search_clicked:
         st.session_state.results_df = pd.DataFrame()
