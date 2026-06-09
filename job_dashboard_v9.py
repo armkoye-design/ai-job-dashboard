@@ -1567,5 +1567,5 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             pass
     else:
         st.warning("No jobs matched your filters.")
-    else:
-    st.info("Choose sources and countries, then click Search Jobs.")
+else:
+st.info("Choose sources and countries, then click Search Jobs.")
