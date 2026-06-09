@@ -1509,7 +1509,7 @@ if not df.empty:
 if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
 
 
-df = st.session_state.results_df
+    df = st.session_state.results_df
 
 
 
