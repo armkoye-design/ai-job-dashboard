@@ -1266,7 +1266,13 @@ if search_clicked:
             )
         
             if countries and job_country not in countries:
-                continue
+                st.write(
+                    "Detected:",
+                    job_country,
+                    "| Selected:",
+                    countries
+                )
+                    continue
             key = (
                 job.get("source"),
                 job.get("title"),
