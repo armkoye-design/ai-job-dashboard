@@ -239,28 +239,28 @@ def is_candidate_text(text: str) -> bool:
 def infer_country_from_location(location_text: str, fallback_country: str = "") -> str:
     t = (location_text or "").lower()
         country_names = [
-        "switzerland",
-        "cameroon",
-        "costa rica",
-        "afghanistan",
-        "india",
-        "cambodia",
-        "haiti",
-        "greece",
-        "niger",
-        "kenya",
-        "uganda",
-        "ethiopia",
-        "germany",
-        "france",
-        "canada",
-        "united states",
-        "united kingdom",
-    ]
-    
-    for country in country_names:
-        if country in t:
-            return country.title()
+            "switzerland",
+            "cameroon",
+            "costa rica",
+            "afghanistan",
+            "india",
+            "cambodia",
+            "haiti",
+            "greece",
+            "niger",
+            "kenya",
+            "uganda",
+            "ethiopia",
+            "germany",
+            "france",
+            "canada",
+            "united states",
+            "united kingdom",
+        ]
+        
+        for country in country_names:
+            if country in t:
+                return country.title()
     if not t:
         return fallback_country or ""
 
