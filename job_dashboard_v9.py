@@ -1251,7 +1251,10 @@ if search_clicked:
         st.write("Searching UNICEF")
         jobs = fetch_unicef_jobs()
         st.write("UNICEF jobs found:", len(jobs))
-        
+        if jobs:
+            st.write("First UNICEF job:")
+            st.write(jobs[0]["title"])
+            st.write(jobs[0]["url"])
         for job in jobs:
             key = (
                 job.get("source"),
