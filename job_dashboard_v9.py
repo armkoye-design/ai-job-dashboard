@@ -1005,23 +1005,23 @@ st.write("Custom source URLs belong in the sidebar.")
 
 countries = list(selected_countries)
 if custom_country.strip():
-countries.append(custom_country.strip())
-countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
-
-
-st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
-
-if search_clicked:
-st.session_state.results_df = pd.DataFrame()
-if not countries:
-    st.warning("Please select at least one country.")
-    st.stop()
-
-if not selected_sources:
-    st.warning("Please select at least one job source.")
-    st.stop()
-all_jobs: List[Dict] = []
-seen_keys = set()
+    countries.append(custom_country.strip())
+    countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
+    
+    
+    st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
+    
+    if search_clicked:
+        st.session_state.results_df = pd.DataFrame()
+        if not countries:
+            st.warning("Please select at least one country.")
+            st.stop()
+        
+        if not selected_sources:
+            st.warning("Please select at least one job source.")
+            st.stop()
+        all_jobs: List[Dict] = []
+        seen_keys = set()
     
     
 st.sidebar.header("Sources")
