@@ -1255,7 +1255,22 @@ if search_clicked:
             st.write("First UNICEF job:")
             st.write(jobs[0]["title"])
             st.write(jobs[0]["url"])
+            
         for job in jobs:
+            title = job.get("title", "")
+
+            # extract country from title
+            job_country = infer_country_from_location(
+                title,
+                fallback_country=job.get("country", "")
+            )
+        
+            if countries and job_country not in countries:
+                st.write(
+                "Detected:",
+                job_country,
+                "| Selected:",
+                continue
             key = (
                 job.get("source"),
                 job.get("title"),
