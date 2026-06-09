@@ -1490,6 +1490,8 @@ if search_clicked:
             )
     
         # temporary while debugging
+        st.write("DF columns:", list(df.columns))
+        st.write(df.head())
         df = df[df["Query_Match"] >= 40]
     
         # sort best matches first
