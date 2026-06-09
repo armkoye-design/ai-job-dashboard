@@ -1127,7 +1127,7 @@ if search_clicked:
     
         jobs = fetch_wwr()
     
-        st.write("WWR raw jobs:", len(jobs))
+        
     
         if jobs:
             st.write(jobs[:3])
@@ -1460,8 +1460,7 @@ if search_clicked:
     
     if not df.empty:
 
-        st.write("Max Query Match:", df["Query_Match"].max())
-        st.write("Average Query Match:", df["Query_Match"].mean())
+       
     
         st.write(
             df[["Title", "Query_Match"]]
