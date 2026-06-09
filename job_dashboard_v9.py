@@ -60,7 +60,7 @@ DEFAULT_SOURCES = [
     "EURES",
 
     # Version 10
-    "EURES",
+
     "UN Careers",
     "UNDP",
     "UNICEF",
@@ -606,7 +606,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if not any(term in title_l for term in good_job_terms):
                 continue
             
-            st.write("FOUND:", title)
+            
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
@@ -831,9 +831,7 @@ def fetch_eures_jobs(query="", countries=None):
             timeout=30
         )
 
-        st.write("EURES URL:", url)
-        st.write("Status:", r.status_code)
-        st.write("Length:", len(r.text))
+       
 
         import re
     
@@ -842,7 +840,7 @@ def fetch_eures_jobs(query="", countries=None):
             r.text
         )
     
-        st.write("Found URLs:")
+       
         for m in matches[:100]:
             st.write(m)
 
@@ -1069,7 +1067,7 @@ countries = list(selected_countries)
 if custom_country.strip():
     countries.append(custom_country.strip())
 countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
-st.write("Countries:", countries)
+
 
 st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
 
@@ -1091,7 +1089,7 @@ if search_clicked:
             st.warning("SerpAPI key is missing in the script. Google Jobs will be skipped.")
         else:
             for country in countries:
-                st.write(f"Searching SerpAPI: {country}")
+                
                 serp_jobs = fetch_serpapi_jobs(query, country, SAVED_SERPAPI_KEY.strip())
                 for job in serp_jobs:
                     job_country = infer_country_from_location(job.get("location", ""), fallback_country=country)
@@ -1109,7 +1107,7 @@ if search_clicked:
         for site in ENGLISHJOBS_SITES:
             if site["country"] not in countries:
                 continue
-            st.write(f"Searching EnglishJobs: {site['country']}")
+          
             jobs = scrape_html_jobs_from_site(site["country"], site["base"], site["seeds"])
             for job in jobs:
                 key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
@@ -1174,7 +1172,7 @@ if search_clicked:
             
     # 6) EURES
     if "EURES" in selected_sources:
-        st.write("Searching EURES")
+        
     
         jobs = fetch_eures_jobs(query, countries)
     
@@ -1194,7 +1192,7 @@ if search_clicked:
             all_jobs.append(job)
     # 7) UN Careers
     if "UN Careers" in selected_sources:
-        st.write("Searching UN Careers")
+        
 
         jobs = fetch_un_jobs()
 
@@ -1214,7 +1212,7 @@ if search_clicked:
             all_jobs.append(job)
     # 8) UNDP
     if "UNDP" in selected_sources:
-        st.write("Searching UNDP")
+        
 
         jobs = fetch_undp_jobs()
 
@@ -1234,7 +1232,7 @@ if search_clicked:
             all_jobs.append(job) 
     # 9) Other Agencies
     if "UNICEF" in selected_sources:
-        st.write("Searching UNICEF")
+        
     
         jobs = fetch_unicef_jobs()
     
@@ -1256,7 +1254,7 @@ if search_clicked:
         
 
     if "WHO" in selected_sources:
-        st.write("Searching WHO")
+       
     
         jobs = fetch_who_jobs()
     
@@ -1278,7 +1276,7 @@ if search_clicked:
 
 
     if "UNHCR" in selected_sources:
-        st.write("Searching UNHCR")
+       
     
         jobs = fetch_unhcr_jobs()
     
@@ -1299,7 +1297,7 @@ if search_clicked:
     
     
     if "WFP" in selected_sources:
-        st.write("Searching WFP")
+        
     
         jobs = fetch_wfp_jobs()
     
@@ -1320,7 +1318,7 @@ if search_clicked:
     
     
     if "IOM" in selected_sources:
-        st.write("Searching IOM")
+     
     
         jobs = fetch_iom_jobs()
     
@@ -1341,7 +1339,7 @@ if search_clicked:
     
     
     if "WORLDBANK" in selected_sources:
-        st.write("Searching WORLDBANK")
+      
     
         jobs = fetch_worldbank_jobs()
     
@@ -1362,7 +1360,7 @@ if search_clicked:
     
     
     if "EBRD" in selected_sources:
-        st.write("Searching EBRD")
+        
     
         jobs = fetch_ebrd_jobs()
     
@@ -1384,7 +1382,7 @@ if search_clicked:
     
     # 9) Custom source URL
     if custom_source_url.strip():
-        st.write("Searching custom source URL")
+        
 
         jobs = parse_custom_source(custom_source_url.strip())
 
@@ -1403,12 +1401,6 @@ if search_clicked:
             seen_keys.add(key)
             all_jobs.append(job)
      # 10) Score jobs
-    st.write("EnglishJobs selected:", "EnglishJobs.de Network" in selected_sources)
-    st.write("Relocate selected:", "Relocate.me" in selected_sources)
-    st.write("RemoteOK selected:", "RemoteOK" in selected_sources)
-    st.write("WWR selected:", "We Work Remotely" in selected_sources)
-    
-    st.write("Total jobs before scoring:", len(all_jobs))
     rows = []
     progress = st.progress(0)
     if not include_remote_jobs:
@@ -1519,8 +1511,7 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
 
     df = st.session_state.results_df
 
-    st.subheader("Results")
-    st.write(f"Jobs found: {len(df)}")
+
 
     if not df.empty:
         c1, c2, c3 = st.columns(3)
@@ -1530,9 +1521,28 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             st.metric("Avg Relevance", f"{df['Relevance'].mean():.1f}")
         with c3:
             st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
+            
+        df["Open"] = df["URL"]
 
         st.dataframe(
-            df[["Source", "Country", "Title", "Company", "Location", "Relevance", "Visa_Likelihood", "English_Fit", "Query_Match", "Reason", "URL"]],
+            df[[
+                "Source",
+                "Country",
+                "Title",
+                "Company",
+                "Location",
+                "Relevance",
+                "Visa_Likelihood",
+                "English_Fit",
+                "Query_Match",
+                "Reason",
+                "Open"
+            ]],
+            column_config={
+                "Open": st.column_config.LinkColumn(
+                    "Open Job"
+                )
+            },
             use_container_width=True,
             hide_index=True,
         )
