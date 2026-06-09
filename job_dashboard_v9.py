@@ -1061,12 +1061,13 @@ st.write("Job locations like Toronto are mapped back to Canada automatically.")
 st.write("Custom source URLs belong in the sidebar.")
 
 countries = list(selected_countries)
+
 if custom_country.strip():
     countries.append(custom_country.strip())
-    countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
-    
-    
-    st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
+
+countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
+
+st.info("Countries go in the Countries box. Source URLs go in the custom source box.")
     
 if search_clicked:
         st.session_state.results_df = pd.DataFrame()
@@ -1335,7 +1336,7 @@ if search_clicked:
             all_jobs.append(job)
     
     
-    if "WORLDBANK" in selected_sources:
+    if "WORLD BANK" in selected_sources:
       
     
         jobs = fetch_worldbank_jobs()
@@ -1403,20 +1404,20 @@ if search_clicked:
     if not include_remote_jobs:
         filtered_jobs = []
     
-    for job in all_jobs:
-        location = str(job.get("location", "")).lower()
-        country = str(job.get("country", "")).lower()
-    
-        is_remote = (
-            "remote" in location
-            or "remote" in country
-            or country == "remote/global"
-        )
-    
-        if not is_remote:
-            filtered_jobs.append(job)
-    
-    all_jobs = filtered_jobs
+        for job in all_jobs:
+            location = str(job.get("location", "")).lower()
+            country = str(job.get("country", "")).lower()
+        
+            is_remote = (
+                "remote" in location
+                or "remote" in country
+                or country == "remote/global"
+            )
+        
+            if not is_remote:
+                filtered_jobs.append(job)
+        
+        all_jobs = filtered_jobs
     
     
     
@@ -1503,68 +1504,68 @@ if search_clicked:
 # ============================================================
 # DISPLAY
 # ============================================================
-    if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
+if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
+
+
+    df = st.session_state.results_df
+
+    if not df.empty:
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.metric("Avg Visa Likelihood", f"{df['Visa_Likelihood'].mean():.1f}")
+        with c2:
+            st.metric("Avg Relevance", f"{df['Relevance'].mean():.1f}")
+        with c3:
+            st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
+            
+        df["Open"] = df["URL"]
     
-    
-        df = st.session_state.results_df
-    
-        if not df.empty:
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric("Avg Visa Likelihood", f"{df['Visa_Likelihood'].mean():.1f}")
-            with c2:
-                st.metric("Avg Relevance", f"{df['Relevance'].mean():.1f}")
-            with c3:
-                st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
-                
-            df["Open"] = df["URL"]
-        
-            st.dataframe(
-                df[[
-                    "Source",
-                    "Country",
-                    "Title",
-                    "Company",
-                    "Location",
-                    "Relevance",
-                    "Visa_Likelihood",
-                    "English_Fit",
-                    "Query_Match",
-                    "Reason",
-                    "Open"
-                ]],
-                column_config={
-                    "Open": st.column_config.LinkColumn(
-                        "Open Job"
-                    )
-                },
-                use_container_width=True,
-                hide_index=True,
-            )
-        
-        
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                "Download results as CSV",
-                data=csv,
-                file_name="job_results.csv",
-                mime="text/csv",
-            )
-        
-            try:
-                from io import BytesIO
-                output = BytesIO()
-                with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                    df.to_excel(writer, index=False, sheet_name="Jobs")
-                st.download_button(
-                    "Download results as Excel",
-                    data=output.getvalue(),
-                    file_name="job_results.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        st.dataframe(
+            df[[
+                "Source",
+                "Country",
+                "Title",
+                "Company",
+                "Location",
+                "Relevance",
+                "Visa_Likelihood",
+                "English_Fit",
+                "Query_Match",
+                "Reason",
+                "Open"
+            ]],
+            column_config={
+                "Open": st.column_config.LinkColumn(
+                    "Open Job"
                 )
-            except Exception:
-                pass
-        else:
-            st.warning("No jobs matched your filters.")
+            },
+            use_container_width=True,
+            hide_index=True,
+        )
+    
+    
+        csv = df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "Download results as CSV",
+            data=csv,
+            file_name="job_results.csv",
+            mime="text/csv",
+        )
+    
+        try:
+            from io import BytesIO
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Jobs")
+            st.download_button(
+                "Download results as Excel",
+                data=output.getvalue(),
+                file_name="job_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        except Exception:
+            pass
     else:
-        st.info("Choose sources and countries, then click Search Jobs.")
+        st.warning("No jobs matched your filters.")
+else:
+    st.info("Choose sources and countries, then click Search Jobs.")
