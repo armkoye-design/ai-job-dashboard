@@ -1002,7 +1002,6 @@ custom_country = st.sidebar.text_input(
 
 st.sidebar.divider()
 
-st.sidebar.header("Sources")
 selected_sources = st.sidebar.multiselect(
     "Choose job sources",
     options=DEFAULT_SOURCES,
