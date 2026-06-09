@@ -1554,17 +1554,17 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             mime="text/csv",
         )
     
-            try:
-                from io import BytesIO
-                output = BytesIO()
-                with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                    df.to_excel(writer, index=False, sheet_name="Jobs")
-                st.download_button(
-                    "Download results as Excel",
-                    data=output.getvalue(),
-                    file_name="job_results.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
+        try:
+            from io import BytesIO
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="Jobs")
+            st.download_button(
+                "Download results as Excel",
+                data=output.getvalue(),
+                file_name="job_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
         except Exception:
             pass
     else:
