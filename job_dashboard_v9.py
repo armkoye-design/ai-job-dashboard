@@ -337,15 +337,15 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     matches = sum(1 for w in query_words if w in title_words)
 
-    # all words present
     if matches == len(query_words):
-        return 90
+    return 90
 
-    # only one word matched
+    if matches == len(query_words) - 1:
+        return 60
+    
     if matches == 1:
-        return 35
-
-    return 0
+        return 10
+    
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
@@ -1558,21 +1558,21 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
         df = pd.DataFrame(rows)
-        df = df[df["Query_Match"] >= 15]
+        df = df[df["Query_Match"] >= 60]
         
         
     
         # temporary while debugging
         
         if not df.empty and "Query_Match" in df.columns:
-            df = df[df["Query_Match"] >= 15]
+            df = df[df["Query_Match"] >= 60]
         else:
             df = pd.DataFrame()
     
         # sort best matches first
         if not df.empty:
             df = df.sort_values(
-                by=["Query_Match", "Visa_Likelihood", "Relevance"],
+                by=["Query_Match", "Relevance", "Visa_Likelihood"],
                 ascending=[False, False, False]
             )
               
