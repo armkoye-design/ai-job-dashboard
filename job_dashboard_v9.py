@@ -345,7 +345,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
     
     # almost all words matched
     if matches == len(query_words) - 1:
-        return 50
+        return 40
     
     # one keyword matched
     if matches == 1:
@@ -1569,7 +1569,7 @@ if search_clicked:
 
         if not df.empty and "Query_Match" in df.columns:
             
-            df = df[df["Query_Match"] >= 50]
+            df = df[df["Query_Match"] >= 40]
             
             st.write(df["Query_Match"].value_counts())
         
