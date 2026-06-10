@@ -1063,6 +1063,25 @@ include_remote_jobs = st.sidebar.checkbox(
 
 
 countries = list(selected_countries)
+english_countries = {
+    "Canada",
+    "United States",
+    "United Kingdom",
+    "Ireland",
+    "Australia",
+    "New Zealand",
+}
+
+europe_sources = {
+    "EnglishJobs.de Network",
+    "EURES",
+}
+
+if any(c in english_countries for c in countries):
+    selected_sources = [
+        s for s in selected_sources
+        if s not in europe_sources
+    ]
 
 if custom_country.strip():
     countries.append(custom_country.strip())
