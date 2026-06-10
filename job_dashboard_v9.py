@@ -1202,7 +1202,11 @@ if search_clicked:
                 inferred = infer_country_from_location(job.get("location", ""), fallback_country=job.get("country", ""))
                 job_country = job.get("country", "")
         
-                if countries and job_country not in countries:
+                if (
+                    countries
+                    and job_country not in countries
+                    and job_country not in ["Europe", "Remote/Global"]
+                ):
                     continue
                 key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
                 if key in seen_keys:
@@ -1554,7 +1558,7 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
         df = pd.DataFrame(rows)
-        df = df[df["Query_Match"] >= 40]
+        df = df[df["Query_Match"] >= 15]
         
         
     
