@@ -1403,10 +1403,18 @@ if search_clicked:
          # 10) Score jobs
         rows = []
         progress = st.progress(0)
+        st.write("Total jobs before scoring:", len(all_jobs))
+        
+        if all_jobs:
+            st.write("First job:")
+            st.write(all_jobs[0]["title"])
+            st.write(all_jobs[0]["source"])
+            
         if not include_remote_jobs:
             filtered_jobs = []
         
             for job in all_jobs:
+                st.write("Scoring:", job.get("title"))
                 location = str(job.get("location", "")).lower()
                 country = str(job.get("country", "")).lower()
             
@@ -1459,7 +1467,7 @@ if search_clicked:
             if job.get("source") in special_sources:
                 ai["relevance"] = 100
                 ai["query_match"] = 100
-        
+            st.write("Added row:", job.get("title"))
             rows.append({
                 "Source": job.get("source", ""),
                 "Country": job.get("country", ""),
