@@ -53,6 +53,22 @@ ROLE_QUERY_DEFAULT = "Data Analyst"
 DEFAULT_SOURCES = [
     "SerpAPI Google Jobs",
     "EnglishJobs.de Network",
+    "Relocate.me",
+    "RemoteOK",
+    "We Work Remotely",
+    "EURES",
+
+    # Version 10
+
+    "UN Careers",
+    "UNDP",
+    "UNICEF",
+    "UNHCR",
+    "WFP",
+    "WHO",
+    "IOM",
+    "World Bank",
+    "EBRD",
    
 ]
 
