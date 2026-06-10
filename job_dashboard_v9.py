@@ -1440,6 +1440,15 @@ if search_clicked:
         if "Job Bank Canada" in selected_sources:
             jobs = fetch_job_bank_canada(query)
         
+            st.write("Job Bank returned:", len(jobs))
+        
+            if len(jobs) > 0:
+                st.write(jobs[0])
+        
+            all_jobs.extend(jobs)
+        
+        st.write("All jobs collected:", len(all_jobs))
+        
             for job in jobs:
                 key = (
                     job.get("source", ""),
