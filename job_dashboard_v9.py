@@ -1581,17 +1581,17 @@ if search_clicked:
 
         if "Job Bank Canada" in selected_sources:
     
-        jobs = fetch_job_bank_canada(query)
-    
-        for job in jobs:
-            key = (
-                job.get("title", ""),
-                job.get("url", "")
-            )
-    
-            if key not in seen_keys:
-                seen_keys.add(key)
-                all_jobs.append(job)
+            jobs = fetch_job_bank_canada(query)
+        
+            for job in jobs:
+                key = (
+                    job.get("title", ""),
+                    job.get("url", "")
+                )
+        
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    all_jobs.append(job)
                 
         
         # 9) Custom source URL
