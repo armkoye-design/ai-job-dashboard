@@ -1732,7 +1732,7 @@ if search_clicked:
                 )
                 
             
-        
+            st.write("Final df size:", len(df))
             st.session_state.results_df = df
         else:
             st.session_state.results_df = pd.DataFrame()
