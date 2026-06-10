@@ -1059,29 +1059,62 @@ include_remote_jobs = st.sidebar.checkbox(
 )
 
 
-
-
-
 countries = list(selected_countries)
-english_countries = {
-    "Canada",
-    "United States",
-    "United Kingdom",
-    "Ireland",
-    "Australia",
-    "New Zealand",
+
+if custom_country.strip():
+    countries.append(custom_country.strip())
+
+countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
+
+# --------------------------------------------------
+# Country → Source Mapping
+# --------------------------------------------------
+
+country_source_map = {
+    "Canada": [
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+    ],
+    "United States": [
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+    ],
+    "United Kingdom": [
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+    ],
+    "Ireland": [
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+    ],
+    "Australia": [
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+    ],
+    "New Zealand": [
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+    ],
 }
 
-europe_sources = {
-    "EnglishJobs.de Network",
-    "EURES",
-}
+english_countries = set(country_source_map.keys())
 
 if any(c in english_countries for c in countries):
-    selected_sources = [
-        s for s in selected_sources
-        if s not in europe_sources
-    ]
+
+    selected_sources = []
+
+    for country in countries:
+        for src in country_source_map.get(country, []):
+            if src not in selected_sources:
+                selected_sources.append(src)
+
+st.write("Final selected sources:", selected_sources)
 
 if custom_country.strip():
     countries.append(custom_country.strip())
