@@ -1431,7 +1431,26 @@ if search_clicked:
         
                 seen_keys.add(key)
                 all_jobs.append(job) 
-        # 9) Other Agencies
+
+    #9) 
+        if "Job Bank Canada" in selected_sources:
+            jobs = fetch_job_bank_canada(query)
+        
+            for job in jobs:
+                key = (
+                    job.get("source", ""),
+                    job.get("title", ""),
+                    job.get("company", ""),
+                    job.get("location", ""),
+                    job.get("url", ""),
+                )
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                all_jobs.append(job)
+            
+            
+        # 10) Other Agencies
         if "UNICEF" in selected_sources:
             
         
