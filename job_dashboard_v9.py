@@ -332,16 +332,25 @@ def query_match_score(job: Dict, search_query: str) -> int:
     # exact phrase
     if query == title:
         return 100
-
+    
     # phrase inside title
     if query in title:
         return 95
-
-    # all words present
+    
     matches = sum(1 for w in query_words if w in title_words)
+    
+    # all words matched
     if matches == len(query_words):
-        return 80
-
+        return 90
+    
+    # almost all words matched
+    if matches == len(query_words) - 1:
+        return 70
+    
+    # one keyword matched
+    if matches == 1:
+        return 35
+    
     return 0
 
 def heuristic_score(job: Dict) -> Dict:
