@@ -1014,7 +1014,7 @@ def fetch_ebrd_jobs():
 import requests
 
 def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
-    st.write("Job Bank jobs found:", len(jobs))
+    
 
     jobs = []
 
@@ -1058,8 +1058,8 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "url": href,
                 "tags": [],
             })
-
-        return jobs
+            st.write("Job Bank jobs found:", len(jobs))
+            return jobs
 
     except Exception as e:
         st.error(f"Job Bank error: {e}")
