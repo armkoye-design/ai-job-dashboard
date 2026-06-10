@@ -1005,19 +1005,36 @@ st.sidebar.divider()
 
 st.sidebar.header("Sources")
 
-auto_source_selection = st.sidebar.checkbox(
-    "Auto-select sources by country",
-    value=True
+
+available_sources = DEFAULT_SOURCES.copy()
+
+if countries:
+
+    if any(c in english_countries for c in countries):
+        available_sources = [
+            s for s in available_sources
+            if s not in [
+                "EnglishJobs.de Network",
+                "EURES",
+            ]
+        ]
+
+    elif any(c in europe_countries for c in countries):
+        available_sources = [
+            s for s in available_sources
+            if s not in [
+                # future Canada/US/Australia-specific sources
+            ]
+        ]
+
+selected_sources = st.sidebar.multiselect(
+    
+    "Choose job sources",
+    options=available_sources,
+    default=[],
 )
 
-if not auto_source_selection:
-    selected_sources = st.sidebar.multiselect(
-        "Choose job sources",
-        options=DEFAULT_SOURCES,
-        default=[],
-    )
-else:
-    selected_sources = []
+
 
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
@@ -1075,6 +1092,27 @@ if custom_country.strip():
     countries.append(custom_country.strip())
 
 countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
+english_countries = {
+    "Canada",
+    "United States",
+    "United Kingdom",
+    "Ireland",
+    "Australia",
+    "New Zealand",
+}
+
+europe_countries = {
+    "Germany",
+    "France",
+    "Netherlands",
+    "Belgium",
+    "Austria",
+    "Switzerland",
+    "Sweden",
+    "Norway",
+    "Denmark",
+    "Finland",
+}
 
 # --------------------------------------------------
 # Country → Source Mapping
