@@ -1616,12 +1616,6 @@ if search_clicked:
 
     
          # 10) Score jobs
-
-        st.write("Total jobs collected:", len(all_jobs))
-    
-        for job in all_jobs[:10]:
-            st.write(job["source"], job["title"])
-        st.write(all_jobs[0])
         
         rows = []
         progress = st.progress(0)
