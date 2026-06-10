@@ -1007,7 +1007,59 @@ def fetch_ebrd_jobs():
         "tags": ["EBRD"],
     }]
     
+import requests
 
+def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
+
+    jobs = []
+
+    try:
+        url = (
+            "https://www.jobbank.gc.ca/jobsearch/jobsearch"
+            f"?searchstring={quote_plus(query)}"
+        )
+
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+
+        r = requests.get(url, headers=headers, timeout=30)
+
+        if r.status_code != 200:
+            return jobs
+
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        cards = soup.select("article")
+
+        for card in cards[:limit]:
+
+            title_el = card.select_one("a")
+            if not title_el:
+                continue
+
+            title = clean_text(title_el.get_text())
+
+            href = title_el.get("href", "")
+            if href.startswith("/"):
+                href = "https://www.jobbank.gc.ca" + href
+
+            location = ""
+
+            jobs.append({
+                "source": "Job Bank Canada",
+                "country": "Canada",
+                "title": title,
+                "company": "",
+                "location": location,
+                "url": href,
+                "description": "",
+            })
+
+        return jobs
+
+    except Exception:
+        return jobs
 
 
 # ============================================================
@@ -1526,6 +1578,20 @@ if search_clicked:
         
                 seen_keys.add(key)
                 all_jobs.append(job)
+
+        if "Job Bank Canada" in selected_sources:
+    
+        jobs = fetch_job_bank_canada(query)
+    
+        for job in jobs:
+            key = (
+                job.get("title", ""),
+                job.get("url", "")
+            )
+    
+            if key not in seen_keys:
+                seen_keys.add(key)
+                all_jobs.append(job)
                 
         
         # 9) Custom source URL
@@ -1548,7 +1614,15 @@ if search_clicked:
         
                 seen_keys.add(key)
                 all_jobs.append(job)
+
+    
          # 10) Score jobs
+
+        st.write("Total jobs collected:", len(all_jobs))
+    
+        for job in all_jobs[:10]:
+            st.write(job["source"], job["title"])
+        
         rows = []
         progress = st.progress(0)
            
