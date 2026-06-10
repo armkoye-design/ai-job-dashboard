@@ -345,11 +345,11 @@ def query_match_score(job: Dict, search_query: str) -> int:
     
     # almost all words matched
     if matches == len(query_words) - 1:
-        return 70
+        return 50
     
     # one keyword matched
     if matches == 1:
-        return 35
+        return 20
     
     return 0
 
@@ -1568,17 +1568,7 @@ if search_clicked:
         df = pd.DataFrame(rows)
 
         if not df.empty and "Query_Match" in df.columns:
-            st.write("Jobs before Query_Match filter:", len(df))
         
-            st.write(
-                df[["Title", "Query_Match"]]
-                .sort_values(by="Query_Match", ascending=False)
-                .head(20)
-            )
-        
-            df = df[df["Query_Match"] >= 20]
-        
-            st.write("Jobs after Query_Match filter:", len(df))
         
             if not df.empty:
                 df = df.sort_values(
