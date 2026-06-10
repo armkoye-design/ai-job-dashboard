@@ -52,14 +52,36 @@ ROLE_QUERY_DEFAULT = "Data Analyst"
 
 DEFAULT_SOURCES = [
     "SerpAPI Google Jobs",
+
+    # Europe
     "EnglishJobs.de Network",
     "Relocate.me",
-    "RemoteOK",
-    "We Work Remotely",
     "EURES",
 
-    # Version 10
+    # Remote
+    "RemoteOK",
+    "We Work Remotely",
 
+    # Canada
+    "Job Bank Canada",
+
+    # USA
+    "USAJobs",
+
+    # UK
+    "Civil Service Jobs UK",
+
+    # Australia
+    "APS Jobs",
+    "Seek Australia",
+
+    # New Zealand
+    "Jobs.govt.nz",
+
+    # Ireland
+    "IrishJobs.ie",
+
+    # UN
     "UN Careers",
     "UNDP",
     "UNICEF",
