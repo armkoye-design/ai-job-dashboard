@@ -1568,30 +1568,35 @@ if search_clicked:
         df = pd.DataFrame(rows)
 
         if not df.empty and "Query_Match" in df.columns:
-        
             st.write("Jobs before Query_Match filter:", len(df))
         
             st.write(
-                df[
-                    ["Title", "Query_Match"]
-                ].sort_values(
-                    by="Query_Match",
-                    ascending=False
-                ).head(20)
+                df[["Title", "Query_Match"]]
+                .sort_values(by="Query_Match", ascending=False)
+                .head(20)
             )
         
-            df = df[df["Query_Match"] >= 15]
+            df = df[df["Query_Match"] >= 20]
         
             st.write("Jobs after Query_Match filter:", len(df))
         
+            if not df.empty:
+                df = df.sort_values(
+                    by=["Query_Match", "Relevance", "Visa_Likelihood"],
+                    ascending=[False, False, False]
+                )
+        
+            st.session_state.results_df = df
         else:
-            df = pd.DataFrame()
+            st.session_state.results_df = pd.DataFrame()
     
            
       
     # ============================================================
     # DISPLAY
     # ============================================================
+
+
 if "results_df" in st.session_state and isinstance(st.session_state.results_df, pd.DataFrame):
 
 
