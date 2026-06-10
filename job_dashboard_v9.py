@@ -1482,25 +1482,24 @@ if search_clicked:
         rows = []
         progress = st.progress(0)
            
+        if not include_remote_jobs:
+            filtered_jobs = []
+        
+            for job in all_jobs:
+               
+                location = str(job.get("location", "")).lower()
+                country = str(job.get("country", "")).lower()
             
-            if not include_remote_jobs:
-                filtered_jobs = []
+                is_remote = (
+                    "remote" in location
+                    or "remote" in country
+                    or country == "remote/global"
+                )
             
-                for job in all_jobs:
-                   
-                    location = str(job.get("location", "")).lower()
-                    country = str(job.get("country", "")).lower()
-                
-                    is_remote = (
-                        "remote" in location
-                        or "remote" in country
-                        or country == "remote/global"
-                    )
-                
-                    if not is_remote:
-                        filtered_jobs.append(job)
-                
-                all_jobs = filtered_jobs
+                if not is_remote:
+                    filtered_jobs.append(job)
+            
+            all_jobs = filtered_jobs
         
                     
         
