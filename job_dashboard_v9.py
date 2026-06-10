@@ -1571,7 +1571,7 @@ if search_clicked:
             
             df = df[df["Query_Match"] >= 35]
             
-            st.write(df["Query_Match"].value_counts())
+        
         
             if not df.empty:
                 df = df.sort_values(
@@ -1579,7 +1579,7 @@ if search_clicked:
                     ascending=[False, False, False]
                 )
                 
-            st.write(df["Query_Match"].value_counts())
+            
         
             st.session_state.results_df = df
         else:
