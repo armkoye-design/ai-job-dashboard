@@ -1420,6 +1420,7 @@ if search_clicked:
             
             all_jobs = filtered_jobs
         
+                    
         
         
         #if not include_remote_jobs:
