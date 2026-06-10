@@ -1744,7 +1744,14 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
 
-    
+            st.write("Rows created:", len(rows))
+        
+            for r in rows:
+                st.write(
+                    r["Title"],
+                    r["Company"],
+                    r["Location"]
+                )
         df = pd.DataFrame(rows)
 
         st.write("Rows created:", len(rows))
