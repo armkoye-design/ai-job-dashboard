@@ -53,22 +53,7 @@ ROLE_QUERY_DEFAULT = "Data Analyst"
 DEFAULT_SOURCES = [
     "SerpAPI Google Jobs",
     "EnglishJobs.de Network",
-    "Relocate.me",
-    "RemoteOK",
-    "We Work Remotely",
-    "EURES",
-
-    # Version 10
-
-    "UN Careers",
-    "UNDP",
-    "UNICEF",
-    "UNHCR",
-    "WFP",
-    "WHO",
-    "IOM",
-    "World Bank",
-    "EBRD",
+   
 ]
 
 ENGLISH_SPEAKING_COUNTRIES = {
@@ -1337,7 +1322,7 @@ if search_clicked:
                 all_jobs.append(job)
         
         
-        if "WORLD BANK" in selected_sources:
+        if "World Bank" in selected_sources:
           
         
             jobs = fetch_worldbank_jobs()
@@ -1474,11 +1459,7 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
         df = pd.DataFrame(rows)
-        
-        
-        
-        
-        df = pd.DataFrame(rows)
+    
         
         if not df.empty:
         
@@ -1493,7 +1474,10 @@ if search_clicked:
         # temporary while debugging
         st.write("DF columns:", list(df.columns))
         st.write(df.head())
-        df = df[df["Query_Match"] >= 40]
+        if not df.empty and "Query_Match" in df.columns:
+            df = df[df["Query_Match"] >= 40]
+        else:
+            df = pd.DataFrame()
     
         # sort best matches first
         df = df.sort_values(
