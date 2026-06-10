@@ -1071,27 +1071,63 @@ st.sidebar.header("Sources")
 
 available_sources = DEFAULT_SOURCES.copy()
 
-available_sources = set()
+if country == "Canada":
 
-for country in countries:
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "Job Bank Canada",
+        "RemoteOK",
+        "We Work Remotely",
+        "Relocate.me",
+    ])
 
-    if country in english_countries:
+elif country == "United States":
 
-        available_sources.update([
-            "SerpAPI Google Jobs",
-            "Relocate.me",
-            "RemoteOK",
-            "We Work Remotely",
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "UNHCR",
-            "WHO",
-            "WFP",
-            "IOM",
-            "World Bank",
-            "EBRD",
-        ])
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "USAJobs",
+        "RemoteOK",
+        "We Work Remotely",
+        "Relocate.me",
+    ])
+
+elif country == "United Kingdom":
+
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "Civil Service Jobs UK",
+        "RemoteOK",
+        "We Work Remotely",
+        "Relocate.me",
+    ])
+
+elif country == "Australia":
+
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "APS Jobs",
+        "Seek Australia",
+        "RemoteOK",
+        "We Work Remotely",
+    ])
+
+elif country == "New Zealand":
+
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "Jobs.govt.nz",
+        "RemoteOK",
+        "We Work Remotely",
+    ])
+
+elif country == "Ireland":
+
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "IrishJobs.ie",
+        "RemoteOK",
+        "We Work Remotely",
+    ])
 
     elif country in europe_countries:
 
