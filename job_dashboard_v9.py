@@ -1036,31 +1036,52 @@ st.sidebar.header("Sources")
 
 available_sources = DEFAULT_SOURCES.copy()
 
-if countries:
+available_sources = set()
 
-    if any(c in english_countries for c in countries):
-        available_sources = [
-            s for s in available_sources
-            if s not in [
-                "EnglishJobs.de Network",
-                "EURES",
-            ]
-        ]
+for country in countries:
 
-    elif any(c in europe_countries for c in countries):
-        available_sources = [
-            s for s in available_sources
-            if s not in [
-                # future Canada/US/Australia-specific sources
-            ]
-        ]
+    if country in english_countries:
 
-selected_sources = st.sidebar.multiselect(
-    
-    "Choose job sources",
-    options=available_sources,
-    default=[],
-)
+        available_sources.update([
+            "SerpAPI Google Jobs",
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "UNHCR",
+            "WHO",
+            "WFP",
+            "IOM",
+            "World Bank",
+            "EBRD",
+        ])
+
+    elif country in europe_countries:
+
+        available_sources.update([
+            "SerpAPI Google Jobs",
+            "EnglishJobs.de Network",
+            "EURES",
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+            "UN Careers",
+            "UNDP",
+            "UNICEF",
+            "UNHCR",
+            "WHO",
+            "WFP",
+            "IOM",
+            "World Bank",
+            "EBRD",
+        ])
+
+if not countries:
+    available_sources = DEFAULT_SOURCES
+
+available_sources = sorted(list(available_sources))
 
 
 
