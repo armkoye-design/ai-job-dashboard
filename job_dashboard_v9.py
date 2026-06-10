@@ -548,7 +548,7 @@ def fetch_serpapi_jobs(query: str, country: str, api_key: str) -> List[Dict]:
                     "title": title,
                     "company": company,
                     "location": loc,
-                    "description": desc,
+                    "description": f"{title} {company} {location}",
                     "url": url,
                     "tags": [],
                 }))
@@ -1617,6 +1617,7 @@ if search_clicked:
     
         for job in all_jobs[:10]:
             st.write(job["source"], job["title"])
+        st.write(all_jobs[0])
         
         rows = []
         progress = st.progress(0)
