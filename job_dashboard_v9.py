@@ -1554,11 +1554,10 @@ if search_clicked:
                 "URL": job.get("url", ""),
                 "Description": job.get("description", "")[:3000],
             })
-        df = pd.DataFrame(rows)
-        df = df[df["Query_Match"] >= 80]
-        
-        
+
     
+        df = pd.DataFrame(rows)
+        
         # temporary while debugging
         
         if not df.empty and "Query_Match" in df.columns:
