@@ -371,6 +371,10 @@ def query_match_score(job: Dict, search_query: str) -> int:
     # all words matched
     if matches == len(query_words):
         return 90
+        
+    # Query Title
+    if query in title:
+        return 90
     
     # almost all words matched
     if matches == len(query_words) - 1:
