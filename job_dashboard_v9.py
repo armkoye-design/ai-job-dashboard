@@ -1058,7 +1058,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "url": href,
                 "tags": [],
             })
-        st.write("Job Bank jobs found:", len(jobs))
+        
         return jobs
 
     except Exception as e:
@@ -1440,7 +1440,7 @@ if search_clicked:
         if "Job Bank Canada" in selected_sources:
             jobs = fetch_job_bank_canada(query)
         
-            st.write("Job Bank returned:", len(jobs))
+         
         
             if len(jobs) > 0:
                 st.write(jobs[0])
@@ -1460,7 +1460,7 @@ if search_clicked:
                 seen_keys.add(key)
                 all_jobs.append(job)
         
-        st.write("All jobs collected:", len(all_jobs))
+        
             
             
         # 10) Other Agencies
@@ -1636,13 +1636,7 @@ if search_clicked:
 
     
          # 10) Score jobs
-        st.write("All jobs before scoring:", len(all_jobs))
-    
-        for job in all_jobs:
-            st.write(
-                job.get("title"),
-                job.get("company")
-            )
+       
         
         rows = []
         progress = st.progress(0)
@@ -1748,7 +1742,7 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
 
-            st.write("Rows created:", len(rows))
+            
         
             for r in rows:
                 st.write(
@@ -1758,8 +1752,7 @@ if search_clicked:
                 )
         df = pd.DataFrame(rows)
 
-        st.write("Rows created:", len(rows))
-        st.write("DataFrame rows:", len(df))
+        
 
         if not df.empty and "Query_Match" in df.columns:
             
@@ -1774,7 +1767,7 @@ if search_clicked:
                 )
                 
             
-            st.write("Final df size:", len(df))
+            
             st.session_state.results_df = df
         else:
             st.session_state.results_df = pd.DataFrame()
