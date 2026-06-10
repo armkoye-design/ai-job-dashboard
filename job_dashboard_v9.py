@@ -1083,6 +1083,13 @@ if not countries:
 
 available_sources = sorted(list(available_sources))
 
+# filter available_sources based on countries
+
+selected_sources = st.sidebar.multiselect(
+    "Choose job sources",
+    options=available_sources,
+    default=[],
+)
 
 
 custom_source_url = st.sidebar.text_input(
