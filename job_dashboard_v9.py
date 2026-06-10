@@ -1050,7 +1050,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "title": title,
                 "company": company,
                 "location": location,
-                "description": desc,
+                "description": summary_text,
                 "url": href,
                 "tags": [],
             })
@@ -1659,6 +1659,24 @@ if search_clicked:
         
             score = query_match_score(job, query)
             ai = heuristic_score(job)
+
+            # -----------------------------------
+            # Canada Job Bank visa override
+            # -----------------------------------
+            text = (
+                str(job.get("title", "")) + " " +
+                str(job.get("description", ""))
+            ).lower()
+        
+            if job.get("source") == "Job Bank Canada":
+        
+                if (
+                    "canadian citizen" in text
+                    or "permanent resident" in text
+                    or "valid work permit" in text
+                    or "not authorized to work in canada" in text
+                ):
+                    ai["visa_likelihood"] = 0
         
             special_sources = [
                 "UN Careers",
