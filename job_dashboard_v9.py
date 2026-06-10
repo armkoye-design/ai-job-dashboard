@@ -1504,12 +1504,13 @@ if search_clicked:
             df = pd.DataFrame()
     
         # sort best matches first
-        df = df.sort_values(
-            by=["Query_Match", "Visa_Likelihood", "Relevance"],
-            ascending=[False, False, False]
-        )
-          
-        st.session_state.results_df = df
+        if not df.empty:
+            df = df.sort_values(
+                by=["Query_Match", "Visa_Likelihood", "Relevance"],
+                ascending=[False, False, False]
+            )
+              
+            st.session_state.results_df = df
     
            
       
