@@ -1556,20 +1556,12 @@ if search_clicked:
         df = pd.DataFrame(rows)
     
         
-        if not df.empty:
         
-           
-        
-            st.write(
-                df[["Title", "Query_Match"]]
-                .sort_values("Query_Match", ascending=False)
-                .head(20)
-            )
     
         # temporary while debugging
         
         if not df.empty and "Query_Match" in df.columns:
-            df = df[df["Query_Match"] >= 40]
+            df = df[df["Query_Match"] >= 15]
         else:
             df = pd.DataFrame()
     
@@ -1604,27 +1596,24 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
         df["Open"] = df["URL"]
     
         st.dataframe(
-            df[[
-                "Source",
-                "Country",
-                "Title",
-                "Company",
-                "Location",
-                "Relevance",
-                "Visa_Likelihood",
-                "English_Fit",
-                "Query_Match",
-                "Reason",
-                "Open"
-            ]],
-            column_config={
-                "Open": st.column_config.LinkColumn(
-                    "Open Job"
+            display_df = df[
+                [
+                    "Source",
+                    "Country",
+                    "Title",
+                    "Company",
+                    "Location",
+                    "Relevance",
+                    "Visa_Likelihood",
+                    "English_Fit",
+                    "Query_Match",
+                ]
+            ]
+                st.dataframe(
+            display_df,
+            use_container_width=False,
+            height=600
                 )
-            },
-            use_container_width=True,
-            hide_index=True,
-        )
     
     
         csv = df.to_csv(index=False).encode("utf-8")
