@@ -345,7 +345,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
     
     if matches == 1:
         return 10
-    
+    return 0
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
