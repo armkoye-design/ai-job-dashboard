@@ -1437,30 +1437,30 @@ if search_clicked:
 
     # 9) Job Bank Canada
 
-if "Job Bank Canada" in selected_sources:
-    jobs = fetch_job_bank_canada(query)
-
-    st.write("Job Bank returned:", len(jobs))
-
-    if len(jobs) > 0:
-        st.write(jobs[0])
-
-    for job in jobs:
-        key = (
-            job.get("source", ""),
-            job.get("title", ""),
-            job.get("company", ""),
-            job.get("location", ""),
-            job.get("url", ""),
-        )
-
-        if key in seen_keys:
-            continue
-
-        seen_keys.add(key)
-        all_jobs.append(job)
-
-st.write("All jobs collected:", len(all_jobs))
+        if "Job Bank Canada" in selected_sources:
+            jobs = fetch_job_bank_canada(query)
+        
+            st.write("Job Bank returned:", len(jobs))
+        
+            if len(jobs) > 0:
+                st.write(jobs[0])
+        
+            for job in jobs:
+                key = (
+                    job.get("source", ""),
+                    job.get("title", ""),
+                    job.get("company", ""),
+                    job.get("location", ""),
+                    job.get("url", ""),
+                )
+        
+                if key in seen_keys:
+                    continue
+        
+                seen_keys.add(key)
+                all_jobs.append(job)
+        
+        st.write("All jobs collected:", len(all_jobs))
             
             
         # 10) Other Agencies
