@@ -1596,7 +1596,7 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
         df["Open"] = df["URL"]
     
         st.dataframe(
-            display_df = df[
+            df[
                 [
                     "Source",
                     "Country",
@@ -1608,12 +1608,10 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
                     "English_Fit",
                     "Query_Match",
                 ]
-            ]
-                st.dataframe(
-            display_df,
+            ],
             use_container_width=False,
             height=600
-                )
+        )
     
     
         csv = df.to_csv(index=False).encode("utf-8")
