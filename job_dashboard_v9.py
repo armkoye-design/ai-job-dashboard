@@ -1571,7 +1571,7 @@ if search_clicked:
                 ).head(20)
             )
         
-            df = df[df["Query_Match"] >= 35]
+            df = df[df["Query_Match"] >= 15]
         
             st.write("Jobs after Query_Match filter:", len(df))
         
