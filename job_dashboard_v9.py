@@ -1650,6 +1650,13 @@ if search_clicked:
 
     
          # 10) Score jobs
+        st.write("All jobs before scoring:", len(all_jobs))
+    
+        for job in all_jobs:
+            st.write(
+                job.get("title"),
+                job.get("company")
+            )
         
         rows = []
         progress = st.progress(0)
