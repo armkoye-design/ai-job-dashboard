@@ -1129,25 +1129,25 @@ elif country == "Ireland":
         "We Work Remotely",
     ])
 
-    elif country in europe_countries:
+elif country in europe_countries:
 
-        available_sources.update([
-            "SerpAPI Google Jobs",
-            "EnglishJobs.de Network",
-            "EURES",
-            "Relocate.me",
-            "RemoteOK",
-            "We Work Remotely",
-            "UN Careers",
-            "UNDP",
-            "UNICEF",
-            "UNHCR",
-            "WHO",
-            "WFP",
-            "IOM",
-            "World Bank",
-            "EBRD",
-        ])
+    available_sources.update([
+        "SerpAPI Google Jobs",
+        "EnglishJobs.de Network",
+        "EURES",
+        "Relocate.me",
+        "RemoteOK",
+        "We Work Remotely",
+        "UN Careers",
+        "UNDP",
+        "UNICEF",
+        "UNHCR",
+        "WHO",
+        "WFP",
+        "IOM",
+        "World Bank",
+        "EBRD",
+    ])
 
 if not countries:
     available_sources = DEFAULT_SOURCES
