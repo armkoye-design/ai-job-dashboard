@@ -326,26 +326,22 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title = re.sub(r"\s+", " ", title).strip()
     query = re.sub(r"\s+", " ", query).strip()
 
-    if query == title:
-        return 100
-
-    if query in title:
-        return 95
-
     query_words = [w for w in query.split() if len(w) > 2]
     title_words = title.split()
 
+    # exact phrase
+    if query == title:
+        return 100
+
+    # phrase inside title
+    if query in title:
+        return 95
+
+    # all words present
     matches = sum(1 for w in query_words if w in title_words)
-
     if matches == len(query_words):
-        return 90
+        return 80
 
-    if matches == len(query_words) - 1:
-        return 60
-    
-    if matches == 1:
-        return 10
-        
     return 0
 
 def heuristic_score(job: Dict) -> Dict:
@@ -1559,14 +1555,14 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
         df = pd.DataFrame(rows)
-        df = df[df["Query_Match"] >= 60]
+        df = df[df["Query_Match"] >= 80]
         
         
     
         # temporary while debugging
         
         if not df.empty and "Query_Match" in df.columns:
-            df = df[df["Query_Match"] >= 60]
+            df = df[df["Query_Match"] >= 80]
         else:
             df = pd.DataFrame()
     
