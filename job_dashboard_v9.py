@@ -1062,8 +1062,8 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
         return jobs
 
     except Exception as e:
-    st.error(f"Job Bank error: {e}")
-    return jobs
+        st.error(f"Job Bank error: {e}")
+        return jobs
 
 
 # ============================================================
