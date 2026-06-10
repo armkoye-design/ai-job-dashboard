@@ -1432,7 +1432,8 @@ if search_clicked:
                 seen_keys.add(key)
                 all_jobs.append(job) 
 
-    #9) 
+    #9) Job bank-Canada
+    
         if "Job Bank Canada" in selected_sources:
             jobs = fetch_job_bank_canada(query)
         
