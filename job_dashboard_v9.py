@@ -1034,6 +1034,9 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
 
         for card in cards[:limit]:
 
+            st.write(card.prettify()[:2000])
+            st.stop()
+
             title_el = card.select_one("a")
             if not title_el:
                 continue
