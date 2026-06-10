@@ -1593,23 +1593,26 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
         with c3:
             st.metric("Avg English Fit", f"{df['English_Fit'].mean():.1f}")
             
+        display_df = df[
+            [
+                "Source",
+                "Country",
+                "Title",
+                "Company",
+                "Location",
+                "Relevance",
+                "Visa_Likelihood",
+                "English_Fit",
+                "Query_Match",
+                "URL",
+            ]
+        ].copy()
+        
         display_df["Open"] = display_df["URL"]
-    
+        
         st.dataframe(
-            df[
-                [
-                    "Source",
-                    "Country",
-                    "Title",
-                    "Company",
-                    "Location",
-                    "Relevance",
-                    "Visa_Likelihood",
-                    "English_Fit",
-                    "Query_Match",
-                ]
-            ],
-            use_container_width=False,
+            display_df,
+            use_container_width=True,
             height=600
         )
     
