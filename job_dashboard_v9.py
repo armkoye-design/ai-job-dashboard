@@ -1003,11 +1003,21 @@ custom_country = st.sidebar.text_input(
 
 st.sidebar.divider()
 
-selected_sources = st.sidebar.multiselect(
-    "Choose job sources",
-    options=DEFAULT_SOURCES,
-    default=[],
+st.sidebar.header("Sources")
+
+auto_source_selection = st.sidebar.checkbox(
+    "Auto-select sources by country",
+    value=True
 )
+
+if not auto_source_selection:
+    selected_sources = st.sidebar.multiselect(
+        "Choose job sources",
+        options=DEFAULT_SOURCES,
+        default=[],
+    )
+else:
+    selected_sources = []
 
 custom_source_url = st.sidebar.text_input(
     "Add custom source URL",
@@ -1070,42 +1080,54 @@ countries = [x for x in dict.fromkeys([clean_text(x) for x in countries]) if x]
 # Country → Source Mapping
 # --------------------------------------------------
 
-country_source_map = {
-    "Canada": [
-        "Relocate.me",
-        "RemoteOK",
-        "We Work Remotely",
-    ],
-    "United States": [
-        "Relocate.me",
-        "RemoteOK",
-        "We Work Remotely",
-    ],
-    "United Kingdom": [
-        "Relocate.me",
-        "RemoteOK",
-        "We Work Remotely",
-    ],
-    "Ireland": [
-        "Relocate.me",
-        "RemoteOK",
-        "We Work Remotely",
-    ],
-    "Australia": [
-        "Relocate.me",
-        "RemoteOK",
-        "We Work Remotely",
-    ],
-    "New Zealand": [
-        "Relocate.me",
-        "RemoteOK",
-        "We Work Remotely",
-    ],
-}
+if auto_source_selection:
 
-english_countries = set(country_source_map.keys())
-
-if any(c in english_countries for c in countries):
+    country_source_map = {
+        "Canada": [
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+        ],
+        "United States": [
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+        ],
+        "United Kingdom": [
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+        ],
+        "Ireland": [
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+        ],
+        "Australia": [
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+        ],
+        "New Zealand": [
+            "Relocate.me",
+            "RemoteOK",
+            "We Work Remotely",
+        ],
+        "France": [
+            "EnglishJobs.de Network",
+            "EURES",
+            "Relocate.me",
+        ],
+        "Germany": [
+            "EnglishJobs.de Network",
+            "EURES",
+            "Relocate.me",
+        ],
+        "Switzerland": [
+            "EnglishJobs.de Network",
+            "EURES",
+        ],
+    }
 
     selected_sources = []
 
@@ -1114,7 +1136,7 @@ if any(c in english_countries for c in countries):
             if src not in selected_sources:
                 selected_sources.append(src)
 
-st.write("Final selected sources:", selected_sources)
+
 
 if custom_country.strip():
     countries.append(custom_country.strip())
