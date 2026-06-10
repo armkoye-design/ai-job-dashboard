@@ -1703,7 +1703,7 @@ if search_clicked:
             ).lower()
         
             if job.get("source") == "Job Bank Canada":
-                break
+                
                 if (
                     "canadian citizen" in text
                     or "permanent resident" in text
