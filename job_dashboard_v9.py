@@ -1058,8 +1058,8 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "url": href,
                 "tags": [],
             })
-                st.write("Job Bank jobs found:", len(jobs))
-                return jobs
+        st.write("Job Bank jobs found:", len(jobs))
+        return jobs
 
     except Exception as e:
         st.error(f"Job Bank error: {e}")
