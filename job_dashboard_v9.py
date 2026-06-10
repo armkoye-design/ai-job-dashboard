@@ -1014,6 +1014,8 @@ def fetch_ebrd_jobs():
 import requests
 
 def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
+    st.write("Job Bank jobs found:", len(jobs))
+
     jobs = []
 
     try:
@@ -1044,7 +1046,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
             desc = clean_text(date_el.get_text(" ", strip=True)) if date_el else ""
             
-            st.write("Summary:", summary_text)
+            st.write("Summary:", desc)
             
             jobs.append({
                 "source": "Job Bank Canada",
@@ -1052,15 +1054,16 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "title": title,
                 "company": company,
                 "location": location,
-                "description": summary_text,
+                "description": desc,
                 "url": href,
                 "tags": [],
             })
 
         return jobs
 
-    except Exception:
-        return jobs
+    except Exception as e:
+    st.error(f"Job Bank error: {e}")
+    return jobs
 
 
 # ============================================================
