@@ -1568,13 +1568,16 @@ if search_clicked:
         df = pd.DataFrame(rows)
 
         if not df.empty and "Query_Match" in df.columns:
-        
+            
+            df = df[df["Query_Match"] >= 20]
         
             if not df.empty:
                 df = df.sort_values(
                     by=["Query_Match", "Relevance", "Visa_Likelihood"],
                     ascending=[False, False, False]
                 )
+                
+            st.write(df["Query_Match"].value_counts())
         
             st.session_state.results_df = df
         else:
