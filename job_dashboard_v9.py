@@ -1006,33 +1006,33 @@ st.sidebar.divider()
 st.sidebar.header("Sources")
 
 
-available_sources = DEFAULT_SOURCES.copy()
-
-if countries:
-
-    if any(c in english_countries for c in countries):
-        available_sources = [
-            s for s in available_sources
-            if s not in [
-                "EnglishJobs.de Network",
-                "EURES",
-            ]
-        ]
-
-    elif any(c in europe_countries for c in countries):
-        available_sources = [
-            s for s in available_sources
-            if s not in [
-                # future Canada/US/Australia-specific sources
-            ]
-        ]
-
-selected_sources = st.sidebar.multiselect(
+    available_sources = DEFAULT_SOURCES.copy()
     
-    "Choose job sources",
-    options=available_sources,
-    default=[],
-)
+    if countries:
+    
+        if any(c in english_countries for c in countries):
+            available_sources = [
+                s for s in available_sources
+                if s not in [
+                    "EnglishJobs.de Network",
+                    "EURES",
+                ]
+            ]
+    
+        elif any(c in europe_countries for c in countries):
+            available_sources = [
+                s for s in available_sources
+                if s not in [
+                    # future Canada/US/Australia-specific sources
+                ]
+            ]
+    
+    selected_sources = st.sidebar.multiselect(
+        
+        "Choose job sources",
+        options=available_sources,
+        default=[],
+    )
 
 
 
