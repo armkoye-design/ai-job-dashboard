@@ -1010,53 +1010,45 @@ def fetch_ebrd_jobs():
 import requests
 
 def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
-
     jobs = []
 
     try:
-        url = (
-            "https://www.jobbank.gc.ca/jobsearch/jobsearch"
-            f"?searchstring={quote_plus(query)}"
-        )
-
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
-
-        r = requests.get(url, headers=headers, timeout=30)
-
+        url = "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=" + quote_plus(query)
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
         if r.status_code != 200:
             return jobs
 
         soup = BeautifulSoup(r.text, "html.parser")
-
-        cards = soup.select("article")
+        cards = soup.select("article.action-buttons")
 
         for card in cards[:limit]:
+            title_el = card.select_one("span.noctitle")
+            link_el = card.select_one("a.resultJobItem")
+            date_el = card.select_one("li.date")
+            company_el = card.select_one("li.business")
+            location_el = card.select_one("li.location")
 
-            st.write(card.prettify()[:2000])
-            st.stop()
-
-            title_el = card.select_one("a")
-            if not title_el:
+            if not title_el or not link_el:
                 continue
 
-            title = clean_text(title_el.get_text())
-
-            href = title_el.get("href", "")
+            title = clean_text(title_el.get_text(" ", strip=True))
+            href = link_el.get("href", "")
             if href.startswith("/"):
                 href = "https://www.jobbank.gc.ca" + href
 
-            location = ""
+            company = clean_text(company_el.get_text(" ", strip=True)) if company_el else ""
+            location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
+            desc = clean_text(date_el.get_text(" ", strip=True)) if date_el else ""
 
             jobs.append({
                 "source": "Job Bank Canada",
                 "country": "Canada",
                 "title": title,
-                "company": "",
+                "company": company,
                 "location": location,
+                "description": desc,
                 "url": href,
-                "description": "",
+                "tags": [],
             })
 
         return jobs
