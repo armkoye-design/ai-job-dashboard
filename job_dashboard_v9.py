@@ -1058,8 +1058,8 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "url": href,
                 "tags": [],
             })
-            st.write("Job Bank jobs found:", len(jobs))
-            return jobs
+                st.write("Job Bank jobs found:", len(jobs))
+                return jobs
 
     except Exception as e:
         st.error(f"Job Bank error: {e}")
@@ -1611,20 +1611,6 @@ if search_clicked:
         
                 seen_keys.add(key)
                 all_jobs.append(job)
-
-        if "Job Bank Canada" in selected_sources:
-    
-            jobs = fetch_job_bank_canada(query)
-        
-            for job in jobs:
-                key = (
-                    job.get("title", ""),
-                    job.get("url", "")
-                )
-        
-                if key not in seen_keys:
-                    seen_keys.add(key)
-                    all_jobs.append(job)
                 
         
         # 9) Custom source URL
@@ -1700,6 +1686,17 @@ if search_clicked:
         
             score = query_match_score(job, query)
             ai = heuristic_score(job)
+
+            if job.get("source") == "Job Bank Canada":
+
+                if score >= 90:
+                    ai["visa_likelihood"] = 60
+            
+                elif score >= 70:
+                    ai["visa_likelihood"] = 40
+            
+                elif score >= 35:
+                    ai["visa_likelihood"] = 20
 
             # -----------------------------------
             # Canada Job Bank visa override
