@@ -1608,10 +1608,14 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             ]
         ].copy()
         
-        display_df["Open"] = display_df["URL"]
-        
         st.dataframe(
             display_df,
+            column_config={
+                "URL": st.column_config.LinkColumn(
+                    "Open Job",
+                    display_text="Open"
+                )
+            },
             use_container_width=True,
             height=600
         )
