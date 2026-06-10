@@ -1481,9 +1481,6 @@ if search_clicked:
          # 10) Score jobs
         rows = []
         progress = st.progress(0)
-       
-        
-        if all_jobs:
            
             
             if not include_remote_jobs:
@@ -1519,7 +1516,6 @@ if search_clicked:
         
         
         for idx, job in enumerate(all_jobs, start=1):
-            if idx <= 3:
                 
         
             progress.progress(min(idx / total, 1.0))
