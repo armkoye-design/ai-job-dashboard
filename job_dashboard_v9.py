@@ -328,16 +328,23 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     query_words = [w for w in query.split() if len(w) > 2]
     title_words = title.split()
-
-    # exact phrase
-    if query == title:
-        return 100
     
-    # phrase inside title
-    if query in title:
-        return 95
+    synonyms = {
+        "analyst": ["analytics", "analysis", "research"],
+        "data": ["dataset", "analytics"],
+    }
     
-    matches = sum(1 for w in query_words if w in title_words)
+    matches = 0
+    
+    for word in query_words:
+    
+        if word in title_words:
+            matches += 1
+            continue
+    
+        if word in synonyms:
+            if any(s in title_words for s in synonyms[word]):
+                matches += 1
     
     # all words matched
     if matches == len(query_words):
