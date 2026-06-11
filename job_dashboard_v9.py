@@ -1739,17 +1739,10 @@ if search_clicked:
             })
 
             
-        
-            for r in rows:
-                st.write(
-                    r["Title"],
-                    r["Company"],
-                    r["Location"]
-                )
+    
         df = pd.DataFrame(rows)
 
         
-
         if not df.empty and "Query_Match" in df.columns:
             
             df = df[df["Query_Match"] >= 35]
