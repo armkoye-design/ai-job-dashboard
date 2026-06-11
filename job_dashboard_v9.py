@@ -1106,8 +1106,6 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
 
     except Exception as e:
         st.error(f"Job Bank error: {e}")
-        st.write("Job Bank cards found:", len(cards))
-        st.write("Jobs extracted:", len(jobs))
         return jobs
 # ============================================================
 # STREAMLIT UI
@@ -1724,31 +1722,39 @@ if search_clicked:
         
             score = query_match_score(job, query)
             ai = heuristic_score(job)
+            
             visa_evidence = ""
-
-            text = job.get("description", "").lower()
-
-            # DEBUG
+            text = (
+                str(job.get("title", "")) + " " +
+                str(job.get("description", ""))
+            ).lower()
+            
             if job.get("source") == "Job Bank Canada":
-                st.write("URL:", job["url"])
-                st.write("TEXT:", text[:1000])
-
-            
-                if (
-                    "other candidates" in text
-                    or "with or without a valid canadian work permit" in text
-                ):
+                if any(x in text for x in [
+                    "other candidates",
+                    "with or without a valid canadian work permit",
+                    "international candidates",
+                    "foreign candidates",
+                    "foreign worker",
+                    "international applicants",
+                ]):
                     ai["visa_likelihood"] = 90
+                    visa_evidence = "Foreign workers accepted"
             
-                elif (
-                    "do not apply if you are not authorized to work in canada"
-                    or "canadian citizen" in text
-                    or "permanent resident of canada" in text
-                ):
+                elif any(x in text for x in [
+                    "do not apply if you are not authorized to work in canada",
+                    "canadian citizen",
+                    "permanent resident of canada",
+                    "temporary resident of canada with a valid work permit",
+                    "you must be legally entitled to work in canada",
+                    "must be authorized to work in canada",
+                ]):
                     ai["visa_likelihood"] = 0
+                    visa_evidence = "Canadian work authorization required"
             
                 else:
                     ai["visa_likelihood"] = 20
+                    visa_evidence = "Unknown eligibility"
                     
             # -----------------------------------
             # Canada Job Bank visa override
