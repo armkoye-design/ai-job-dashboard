@@ -1026,12 +1026,11 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
 
         soup = BeautifulSoup(r.text, "html.parser")
 
-        st.write(r.text[:2000])
+       
         
         cards = soup.select("article.action-buttons")
 
-        st.write("HTTP Status:", r.status_code)
-        st.write("Cards found:", len(cards))
+      
 
         for card in cards[:limit]:
             title_el = card.select_one("span.noctitle")
@@ -1085,10 +1084,6 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             except Exception:
                 pass
         
-            st.write(
-                "Eligibility length:",
-                len(eligibility_text)
-            )
 
             
             jobs.append({
@@ -1632,7 +1627,7 @@ if search_clicked:
 
             jobs = fetch_job_bank_canada(query)
         
-            st.write("Job Bank returned:", len(jobs))
+           
         
             for job in jobs:
         
@@ -1706,7 +1701,6 @@ if search_clicked:
           #  ]
 
 
-        st.write("All jobs collected:", len(all_jobs))
     
         if len(all_jobs) > 0:
             st.write(all_jobs[0])
@@ -1723,13 +1717,15 @@ if search_clicked:
             score = query_match_score(job, query)
             ai = heuristic_score(job)
             
-            visa_evidence = ""
             text = (
                 str(job.get("title", "")) + " " +
                 str(job.get("description", ""))
             ).lower()
             
+            visa_evidence = ""
+            
             if job.get("source") == "Job Bank Canada":
+            
                 if any(x in text for x in [
                     "other candidates",
                     "with or without a valid canadian work permit",
@@ -1754,7 +1750,7 @@ if search_clicked:
             
                 else:
                     ai["visa_likelihood"] = 20
-                    visa_evidence = "Unknown eligibility"
+                    visa_evidence = "Eligibility not specified"
                     
             # -----------------------------------
             # Canada Job Bank visa override
@@ -1766,8 +1762,7 @@ if search_clicked:
         
             if job.get("source") == "Job Bank Canada":
                 
-                st.write("URL:", job.get("url"))
-                st.write("TEXT:", text[:300])
+                
                 
                 if (
                     "canadian citizen" in text
