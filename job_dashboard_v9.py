@@ -1067,7 +1067,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             
                     text = job_soup.get_text(" ", strip=True)
             
-                   lower_text = text.lower()
+                    lower_text = text.lower()
 
                     start = lower_text.find("who can apply for this job")
                     end = lower_text.find("advertised until", start)
