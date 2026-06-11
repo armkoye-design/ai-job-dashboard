@@ -1016,8 +1016,6 @@ def fetch_ebrd_jobs():
 import requests
 
 def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
-    
-
     jobs = []
 
     try:
@@ -1032,7 +1030,6 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
         for card in cards[:limit]:
             title_el = card.select_one("span.noctitle")
             link_el = card.select_one("a.resultJobItem")
-            date_el = card.select_one("li.date")
             company_el = card.select_one("li.business")
             location_el = card.select_one("li.location")
 
@@ -1043,48 +1040,35 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             href = link_el.get("href", "")
             if href.startswith("/"):
                 href = "https://www.jobbank.gc.ca" + href
-                st.write("Fetching:", href)
 
             company = clean_text(company_el.get_text(" ", strip=True)) if company_el else ""
             location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
-            desc = clean_text(date_el.get_text(" ", strip=True)) if date_el else ""
 
-            job_page = requests.get(
-                href,
-                headers={"User-Agent": "Mozilla/5.0"},
-                timeout=30
-            )
-            
-            st.write("Page size:", len(job_page.text))
-            st.write(job_page.text[:3000])
-            
             full_page_text = ""
-            
-            if job_page.status_code == 200:
-                job_soup = BeautifulSoup(job_page.text, "html.parser")
-            
-                full_page_text = clean_text(
-                    job_soup.get_text(" ", strip=True)
-                )
-                        
+            try:
+                job_page = requests.get(href, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+                if job_page.status_code == 200:
+                    job_soup = BeautifulSoup(job_page.text, "html.parser")
+                    full_page_text = clean_text(job_soup.get_text(" ", strip=True))
+            except Exception:
+                pass
+
             jobs.append({
                 "source": "Job Bank Canada",
                 "country": "Canada",
                 "title": title,
                 "company": company,
                 "location": location,
-                "description": full_page_text,
+                "description": full_page_text or "",
                 "url": href,
                 "tags": [],
             })
-        
+
         return jobs
 
     except Exception as e:
         st.error(f"Job Bank error: {e}")
         return jobs
-
-
 # ============================================================
 # STREAMLIT UI
 # ============================================================
@@ -1454,32 +1438,9 @@ if search_clicked:
                 seen_keys.add(key)
                 all_jobs.append(job) 
 
-    # 9) Job Bank Canada
-
-        if "Job Bank Canada" in selected_sources:
-            jobs = fetch_job_bank_canada(query)
-        
-                
-        
-            for job in jobs:
-                key = (
-                    job.get("source", ""),
-                    job.get("title", ""),
-                    job.get("company", ""),
-                    job.get("location", ""),
-                    job.get("url", ""),
-                )
-        
-                if key in seen_keys:
-                    continue
-        
-                seen_keys.add(key)
-                all_jobs.append(job)
-        
-        
+   
             
-            
-        # 10) Other Agencies
+        # 9) Other Agencies
         if "UNICEF" in selected_sources:
             
         
@@ -1704,16 +1665,14 @@ if search_clicked:
             visa_evidence = ""
             
             if job.get("source") == "Job Bank Canada":
-            
                 if any(x in text for x in [
                     "other candidates",
                     "with or without a valid canadian work permit",
                     "international candidates",
                     "foreign candidates",
                     "foreign worker",
-                    "international applicants"
+                    "international applicants",
                 ]):
-            
                     ai["visa_likelihood"] = 90
                     visa_evidence = "Foreign workers accepted"
             
@@ -1723,26 +1682,15 @@ if search_clicked:
                     "permanent resident of canada",
                     "temporary resident of canada with a valid work permit",
                     "you must be legally entitled to work in canada",
-                    "must be authorized to work in canada"
+                    "must be authorized to work in canada",
                 ]):
-            
                     ai["visa_likelihood"] = 0
                     visa_evidence = "Canadian work authorization required"
             
-                elif "posted on indeed.com" in text:
-            
-                    ai["visa_likelihood"] = 0
-                    visa_evidence = "Indeed repost"
-            
-                elif "posted on talent.com" in text:
-            
-                    ai["visa_likelihood"] = 0
-                    visa_evidence = "Talent repost"
-            
                 else:
-            
                     ai["visa_likelihood"] = 20
-                    visa_evidence = "No sponsorship evidence found"
+                    visa_evidence = "Unknown eligibility"
+                    "Visa_Evidence": visa_evidence,
             # -----------------------------------
             # Canada Job Bank visa override
             # -----------------------------------
