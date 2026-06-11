@@ -1774,10 +1774,7 @@ if search_clicked:
                 else:
                     ai["visa_likelihood"] = 20
                     
-          # DEBUG AFTER OVERRIDE
-            st.write("TITLE:", job["title"])
-            st.write("VISA:", ai["visa_likelihood"])
-            st.write("ELIGIBILITY:", job.get("eligibility", "")[:300])
+         
 
             
             special_sources = [
@@ -1823,9 +1820,9 @@ if search_clicked:
     
         df = pd.DataFrame(rows)
     
-        st.write("Rows before filters:", len(df))
+        
         if "Visa_Likelihood" in df.columns:
-            st.write(df["Visa_Likelihood"].value_counts())
+           
 
         df = df[df["Visa_Likelihood"] > 0]
         
@@ -1837,7 +1834,7 @@ if search_clicked:
         
             if not df.empty:
                 df = df.sort_values(
-                    by=["Query_Match", "Relevance", "Visa_Likelihood"],
+                    by=["Visa_Likelihood", "Query_Match", "Relevance"],
                     ascending=[False, False, False]
                 )
                 
