@@ -1820,8 +1820,6 @@ if search_clicked:
     
         df = pd.DataFrame(rows)
     
-        
-        if "Visa_Likelihood" in df.columns:
            
 
         df = df[df["Visa_Likelihood"] > 0]
