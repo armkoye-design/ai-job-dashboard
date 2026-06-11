@@ -1439,9 +1439,6 @@ if search_clicked:
         if "Job Bank Canada" in selected_sources:
             jobs = fetch_job_bank_canada(query)
         
-         
-        
-            if len(jobs) > 0:
                 
         
             for job in jobs:
