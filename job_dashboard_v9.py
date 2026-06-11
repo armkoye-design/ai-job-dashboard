@@ -1698,6 +1698,8 @@ if search_clicked:
         
             if job.get("source") == "Job Bank Canada":
                 
+                st.write("TEXT:", text[:300])
+                
                 if (
                     "canadian citizen" in text
                     or "permanent resident" in text
