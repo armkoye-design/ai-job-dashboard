@@ -1717,13 +1717,15 @@ if search_clicked:
             score = query_match_score(job, query)
             ai = heuristic_score(job)
             
-            visa_evidence = ""
             text = (
                 str(job.get("title", "")) + " " +
                 str(job.get("description", ""))
             ).lower()
             
+            visa_evidence = ""
+            
             if job.get("source") == "Job Bank Canada":
+            
                 if any(x in text for x in [
                     "other candidates",
                     "with or without a valid canadian work permit",
@@ -1748,7 +1750,7 @@ if search_clicked:
             
                 else:
                     ai["visa_likelihood"] = 20
-                    visa_evidence = "Unknown eligibility"
+                    visa_evidence = "Eligibility not specified"
                     
             # -----------------------------------
             # Canada Job Bank visa override
