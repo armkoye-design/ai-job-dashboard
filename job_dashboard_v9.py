@@ -1046,8 +1046,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
             desc = clean_text(date_el.get_text(" ", strip=True)) if date_el else ""
             
-            st.write("Summary:", desc)
-            
+                        
             jobs.append({
                 "source": "Job Bank Canada",
                 "country": "Canada",
@@ -1443,7 +1442,7 @@ if search_clicked:
          
         
             if len(jobs) > 0:
-                st.write(jobs[0])
+                
         
             for job in jobs:
                 key = (
