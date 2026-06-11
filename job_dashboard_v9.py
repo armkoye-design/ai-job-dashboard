@@ -1728,32 +1728,29 @@ if search_clicked:
             visa_evidence = ""
             
             if job.get("source") == "Job Bank Canada":
-            
-                if any(x in text for x in [
-                    "other candidates",
-                    "with or without a valid canadian work permit",
-                    "international candidates",
-                    "foreign candidates",
-                    "foreign worker",
-                    "international applicants",
-                ]):
-                    ai["visa_likelihood"] = 90
-                    visa_evidence = "Foreign workers accepted"
-            
-                elif any(x in text for x in [
-                    "do not apply if you are not authorized to work in canada",
-                    "canadian citizen",
-                    "permanent resident of canada",
-                    "temporary resident of canada with a valid work permit",
-                    "you must be legally entitled to work in canada",
-                    "must be authorized to work in canada",
-                ]):
+
+                if (
+                    "do not apply if you are not authorized to work in canada" in text
+                    or "must be authorized to work in canada" in text
+                    or "must be legally entitled to work in canada" in text
+                    or "valid work permit" in text
+                    or "canadian citizen" in text
+                    or "permanent resident of canada" in text
+                ):
                     ai["visa_likelihood"] = 0
-                    visa_evidence = "Canadian work authorization required"
+                    visa_evidence = "Canadian authorization required"
+            
+                elif (
+                    "other candidates" in text
+                    or "international candidates" in text
+                    or "foreign candidates" in text
+                ):
+                    ai["visa_likelihood"] = 40
+                    visa_evidence = "May accept foreign applicants"
             
                 else:
-                    ai["visa_likelihood"] = 40
-                    visa_evidence = "Eligibility not specified"
+                    ai["visa_likelihood"] = 20
+                    visa_evidence = "Unknown eligibility"
                     
           
         
