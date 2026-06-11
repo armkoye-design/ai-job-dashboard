@@ -1698,9 +1698,7 @@ if search_clicked:
             ).lower()
             
             if job.get("source") == "Job Bank Canada":
-
-                if job.get("source") == "Job Bank Canada":
-                    st.write(text[:1000])
+                st.write(text[:1000])
             
                 if any(x in text for x in [
                     "other candidates",
@@ -1721,7 +1719,7 @@ if search_clicked:
                     ai["visa_likelihood"] = 0
             
                 else:
-                    ai["visa_likelihood"] = 20
+                    ai["visa_likelihood"] = 0
 
             # -----------------------------------
             # Canada Job Bank visa override
