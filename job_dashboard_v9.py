@@ -1110,9 +1110,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             except Exception:
                 pass
         
-            st.write("TITLE:", title)
-            st.write("URL:", href)
-            st.write("ELIGIBILITY LENGTH:", len(eligibility_text))
+           
             
             jobs.append({
                 "source": "Job Bank Canada",
