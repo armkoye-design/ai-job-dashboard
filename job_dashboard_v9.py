@@ -1806,11 +1806,16 @@ if search_clicked:
             
     
         df = pd.DataFrame(rows)
+    
+        st.write("Rows before filters:", len(df))
+    
+        if "Visa_Likelihood" in df.columns:
+            st.write(df["Visa_Likelihood"].value_counts())
 
         if not df.empty:
     
-            if "Visa_Likelihood" in df.columns:
-                df = df[df["Visa_Likelihood"] > 0]
+           # if "Visa_Likelihood" in df.columns:
+            #    df = df[df["Visa_Likelihood"] > 0]
 
         
         if not df.empty and "Query_Match" in df.columns:
