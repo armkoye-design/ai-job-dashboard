@@ -1740,6 +1740,12 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
 
+                st.write(
+                job.get("title"),
+                score,
+                ai["visa_likelihood"]
+            )
+
             
     
         df = pd.DataFrame(rows)
