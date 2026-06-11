@@ -1690,7 +1690,7 @@ if search_clicked:
                 else:
                     ai["visa_likelihood"] = 20
                     visa_evidence = "Unknown eligibility"
-                    "Visa_Evidence": visa_evidence,
+                    
             # -----------------------------------
             # Canada Job Bank visa override
             # -----------------------------------
