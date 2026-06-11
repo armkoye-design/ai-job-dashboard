@@ -1750,6 +1750,9 @@ if search_clicked:
             visa_evidence = ""
             
             if job.get("source") == "Job Bank Canada":
+                st.write("TITLE:", job["title"])
+                st.write("VISA:", ai["visa_likelihood"])
+                st.write("ELIGIBILITY:", job.get("eligibility", "")[:300])
 
                 if any(x in text for x in [
                     "other candidates",
