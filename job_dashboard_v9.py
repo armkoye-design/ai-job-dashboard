@@ -1729,8 +1729,7 @@ if search_clicked:
 
 
     
-        if len(all_jobs) > 0:
-            st.write(all_jobs[0])
+        
     
         total = max(len(all_jobs), 1)
         
@@ -1808,12 +1807,7 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
 
-            st.write(
-            job.get("title"),
-            score,
-            ai["visa_likelihood"]
-        )
-
+            
             
     
         df = pd.DataFrame(rows)
@@ -1884,14 +1878,12 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
         })
         st.dataframe(
             display_df,
+            hide_index=True,
             column_config={
-                "URL": st.column_config.LinkColumn(
-                    "Open Job",
-                    display_text="Open"
-                )
+                "URL": st.column_config.LinkColumn("Open Job", display_text="Open")
             },
             use_container_width=True,
-            height=600
+            height=600,
         )
     
     
