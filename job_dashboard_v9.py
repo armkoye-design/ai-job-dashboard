@@ -1693,34 +1693,52 @@ if search_clicked:
             ai = heuristic_score(job)
 
             text = (
-                job.get("title", "") + " " +
-                job.get("description", "")
+                str(job.get("title", "")) + " " +
+                str(job.get("description", ""))
             ).lower()
             
+            visa_evidence = ""
+            
             if job.get("source") == "Job Bank Canada":
-                st.write(text[:1000])
             
                 if any(x in text for x in [
                     "other candidates",
                     "with or without a valid canadian work permit",
                     "international candidates",
                     "foreign candidates",
-                    "can apply"
+                    "foreign worker",
+                    "international applicants"
                 ]):
+            
                     ai["visa_likelihood"] = 90
+                    visa_evidence = "Foreign workers accepted"
             
                 elif any(x in text for x in [
                     "do not apply if you are not authorized to work in canada",
                     "canadian citizen",
                     "permanent resident of canada",
                     "temporary resident of canada with a valid work permit",
-                    "you must be legally entitled to work in canada"
+                    "you must be legally entitled to work in canada",
+                    "must be authorized to work in canada"
                 ]):
+            
                     ai["visa_likelihood"] = 0
+                    visa_evidence = "Canadian work authorization required"
+            
+                elif "posted on indeed.com" in text:
+            
+                    ai["visa_likelihood"] = 0
+                    visa_evidence = "Indeed repost"
+            
+                elif "posted on talent.com" in text:
+            
+                    ai["visa_likelihood"] = 0
+                    visa_evidence = "Talent repost"
             
                 else:
+            
                     ai["visa_likelihood"] = 0
-
+                    visa_evidence = "No sponsorship evidence found"
             # -----------------------------------
             # Canada Job Bank visa override
             # -----------------------------------
@@ -1766,6 +1784,7 @@ if search_clicked:
                 "Location": job.get("location", ""),
                 "Relevance": ai.get("relevance", 0),
                 "Visa_Likelihood": ai.get("visa_likelihood", 0),
+                "Visa_Evidence": visa_evidence,
                 "English_Fit": ai.get("english_fit", 0),
                 "Query_Match": score,
                 "Reason": ai.get("reason", ""),
@@ -1782,6 +1801,11 @@ if search_clicked:
             
     
         df = pd.DataFrame(rows)
+
+        if not df.empty:
+    
+            if "Visa_Likelihood" in df.columns:
+                df = df[df["Visa_Likelihood"] > 0]
 
         
         if not df.empty and "Query_Match" in df.columns:
