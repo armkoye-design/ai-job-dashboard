@@ -1724,6 +1724,7 @@ if search_clicked:
         
             score = query_match_score(job, query)
             ai = heuristic_score(job)
+            visa_evidence = ""
 
             text = job.get("description", "").lower()
 
