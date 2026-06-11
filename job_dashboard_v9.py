@@ -1025,7 +1025,13 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             return jobs
 
         soup = BeautifulSoup(r.text, "html.parser")
+
+        st.write(r.text[:2000])
+        
         cards = soup.select("article.action-buttons")
+
+        st.write("HTTP Status:", r.status_code)
+        st.write("Cards found:", len(cards))
 
         for card in cards[:limit]:
             title_el = card.select_one("span.noctitle")
