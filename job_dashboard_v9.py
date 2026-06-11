@@ -1049,17 +1049,29 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 job_page = requests.get(href, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
                 if job_page.status_code == 200:
                     job_soup = BeautifulSoup(job_page.text, "html.parser")
-                    full_page_text = clean_text(job_soup.get_text(" ", strip=True))
+                    def extract_who_can_apply(job_soup):
+                        text = job_soup.get_text("\n", strip=True)
+                    
+                        start = text.find("Who can apply for this job")
+                        if start == -1:
+                            return ""
+                    
+                        end = text.find("Advertised until", start)
+                    
+                        if end == -1:
+                            end = start + 3000
+                    
+                        return text[start:end]
             except Exception:
                 pass
-
+            eligibility_text = extract_who_can_apply(job_soup)
             jobs.append({
                 "source": "Job Bank Canada",
                 "country": "Canada",
                 "title": title,
                 "company": company,
                 "location": location,
-                "description": full_page_text or "",
+                "description": eligibility_text,
                 "url": href,
                 "tags": [],
             })
@@ -1659,39 +1671,25 @@ if search_clicked:
             score = query_match_score(job, query)
             ai = heuristic_score(job)
 
-            text = (
-                str(job.get("title", "")) + " " +
-                str(job.get("description", ""))
-            ).lower()
-            
-            visa_evidence = ""
-            
+            text = job.get("description", "").lower()
+
             if job.get("source") == "Job Bank Canada":
-                if any(x in text for x in [
-                    "other candidates",
-                    "with or without a valid canadian work permit",
-                    "international candidates",
-                    "foreign candidates",
-                    "foreign worker",
-                    "international applicants",
-                ]):
-                    ai["visa_likelihood"] = 90
-                    visa_evidence = "Foreign workers accepted"
             
-                elif any(x in text for x in [
-                    "do not apply if you are not authorized to work in canada",
-                    "canadian citizen",
-                    "permanent resident of canada",
-                    "temporary resident of canada with a valid work permit",
-                    "you must be legally entitled to work in canada",
-                    "must be authorized to work in canada",
-                ]):
+                if (
+                    "other candidates" in text
+                    or "with or without a valid canadian work permit" in text
+                ):
+                    ai["visa_likelihood"] = 90
+            
+                elif (
+                    "do not apply if you are not authorized to work in canada"
+                    or "canadian citizen" in text
+                    or "permanent resident of canada" in text
+                ):
                     ai["visa_likelihood"] = 0
-                    visa_evidence = "Canadian work authorization required"
             
                 else:
                     ai["visa_likelihood"] = 20
-                    visa_evidence = "Unknown eligibility"
                     
             # -----------------------------------
             # Canada Job Bank visa override
