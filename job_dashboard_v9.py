@@ -1066,23 +1066,46 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                     )
             
                     text = job_soup.get_text(" ", strip=True)
-            
-                    lower_text = text.lower()
 
-                    start = lower_text.find("who can apply for this job")
-                    end = lower_text.find("advertised until", start)
-            
+                    lower_text = text.lower()
+                    
+                    keywords = [
+                        "who can apply for this job",
+                        "who can apply to this job",
+                        "the employer accepts applications from",
+                        "you can apply if you are",
+                    ]
+                    
+                    start = -1
+                    
+                    for kw in keywords:
+                        pos = lower_text.find(kw)
+                        if pos != -1:
+                            start = pos
+                            break
+                    
                     if start != -1:
-            
-                        end = text.find(
-                            "Advertised until",
-                            start
-                        )
-            
-                        if end == -1:
-                            end = start + 3000
-            
+                    
+                        end_markers = [
+                            "advertised until",
+                            "how to apply",
+                            "job requirements",
+                            "benefits",
+                            "employment groups",
+                        ]
+                    
+                        end = len(text)
+                    
+                        for marker in end_markers:
+                            pos = lower_text.find(marker, start + 50)
+                    
+                            if pos != -1:
+                                end = min(end, pos)
+                    
                         eligibility_text = text[start:end]
+                    
+                    else:
+                        eligibility_text = ""
             
             except Exception:
                 pass
@@ -1095,7 +1118,8 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "title": title,
                 "company": company,
                 "location": location,
-                "description": eligibility_text,
+                "description": full_text,
+                "eligibility": eligibility_text,
                 "url": href,
                 "tags": [],
             })
@@ -1720,37 +1744,32 @@ if search_clicked:
             score = query_match_score(job, query)
             ai = heuristic_score(job)
             
-            text = (
-                str(job.get("title", "")) + " " +
-                str(job.get("description", ""))
-            ).lower()
+            eligibility = str(job.get("eligibility", "")).lower()
+            text = eligibility
             
             visa_evidence = ""
             
             if job.get("source") == "Job Bank Canada":
 
-                if (
-                    "do not apply if you are not authorized to work in canada" in text
-                    or "must be authorized to work in canada" in text
-                    or "must be legally entitled to work in canada" in text
-                    or "valid work permit" in text
-                    or "canadian citizen" in text
-                    or "permanent resident of canada" in text
-                ):
-                    ai["visa_likelihood"] = 0
-                    visa_evidence = "Canadian authorization required"
+                if any(x in text for x in [
+                    "other candidates",
+                    "with or without a valid canadian work permit",
+                    "foreign candidates",
+                    "international applicants",
+                    "foreign worker",
+                ]):
+                    ai["visa_likelihood"] = 90
             
-                elif (
-                    "other candidates" in text
-                    or "international candidates" in text
-                    or "foreign candidates" in text
-                ):
-                    ai["visa_likelihood"] = 40
-                    visa_evidence = "May accept foreign applicants"
+                elif any(x in text for x in [
+                    "do not apply if you are not authorized to work in canada",
+                    "canadian citizen",
+                    "permanent resident of canada",
+                    "temporary resident of canada with a valid work permit",
+                ]):
+                    ai["visa_likelihood"] = 0
             
                 else:
                     ai["visa_likelihood"] = 20
-                    visa_evidence = "Unknown eligibility"
                     
           
         
