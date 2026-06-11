@@ -1065,9 +1065,12 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                         "html.parser"
                     )
             
-                    text = job_soup.get_text("\n", strip=True)
+                    text = job_soup.get_text(" ", strip=True)
             
-                    start = text.find("Who can apply for this job")
+                   lower_text = text.lower()
+
+                    start = lower_text.find("who can apply for this job")
+                    end = lower_text.find("advertised until", start)
             
                     if start != -1:
             
@@ -1749,28 +1752,10 @@ if search_clicked:
                     visa_evidence = "Canadian work authorization required"
             
                 else:
-                    ai["visa_likelihood"] = 20
+                    ai["visa_likelihood"] = 40
                     visa_evidence = "Eligibility not specified"
                     
-            # -----------------------------------
-            # Canada Job Bank visa override
-            # -----------------------------------
-            text = (
-                str(job.get("title", "")) + " " +
-                str(job.get("description", ""))
-            ).lower()
-        
-            if job.get("source") == "Job Bank Canada":
-                
-                
-                
-                if (
-                    "canadian citizen" in text
-                    or "permanent resident" in text
-                    or "valid work permit" in text
-                    or "not authorized to work in canada" in text
-                ):
-                    ai["visa_likelihood"] = 0
+          
         
             special_sources = [
                 "UN Careers",
