@@ -1043,6 +1043,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             href = link_el.get("href", "")
             if href.startswith("/"):
                 href = "https://www.jobbank.gc.ca" + href
+                st.write("Fetching:", href)
 
             company = clean_text(company_el.get_text(" ", strip=True)) if company_el else ""
             location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
@@ -1053,6 +1054,9 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 headers={"User-Agent": "Mozilla/5.0"},
                 timeout=30
             )
+            
+            st.write("Page size:", len(job_page.text))
+            st.write(job_page.text[:3000])
             
             full_page_text = ""
             
@@ -1737,7 +1741,7 @@ if search_clicked:
             
                 else:
             
-                    ai["visa_likelihood"] = 0
+                    ai["visa_likelihood"] = 20
                     visa_evidence = "No sponsorship evidence found"
             # -----------------------------------
             # Canada Job Bank visa override
@@ -1749,6 +1753,7 @@ if search_clicked:
         
             if job.get("source") == "Job Bank Canada":
                 
+                st.write("URL:", job.get("url"))
                 st.write("TEXT:", text[:300])
                 
                 if (
