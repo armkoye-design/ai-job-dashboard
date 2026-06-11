@@ -1680,13 +1680,13 @@ if search_clicked:
             if job.get("source") == "Job Bank Canada":
 
                 if score >= 90:
-                    ai["visa_likelihood"] = 40
+                    ai["visa_likelihood"] = 15
             
                 elif score >= 70:
-                    ai["visa_likelihood"] = 20
-            
-                elif score >= 35:
                     ai["visa_likelihood"] = 10
+            
+                elif
+                    ai["visa_likelihood"] = 0
 
             # -----------------------------------
             # Canada Job Bank visa override
