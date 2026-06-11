@@ -1066,7 +1066,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                     )
             
                     text = job_soup.get_text(" ", strip=True)
-
+                    full_text = text[:15000]
                     lower_text = text.lower()
                     
                     keywords = [
