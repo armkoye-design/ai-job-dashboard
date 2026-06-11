@@ -1084,7 +1084,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             
             except Exception:
                 pass
-            eligibility_text = extract_who_can_apply(job_soup)
+        
             st.write(
                 "Eligibility length:",
                 len(eligibility_text)
