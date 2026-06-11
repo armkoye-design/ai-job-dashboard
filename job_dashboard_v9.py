@@ -1685,7 +1685,7 @@ if search_clicked:
                 elif score >= 70:
                     ai["visa_likelihood"] = 10
             
-                elif
+                elif score >= 50:
                     ai["visa_likelihood"] = 0
 
             # -----------------------------------
