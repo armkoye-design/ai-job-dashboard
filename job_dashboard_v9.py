@@ -1876,6 +1876,12 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             ]
         ].copy()
         
+        display_df = df.rename(columns={
+            "Query_Match": "Keyword Match",
+            "Relevance": "Job Description Match",
+            "English_Fit": "English Fit",
+            "Visa_Likelihood": "Visa Likelihood"
+        })
         st.dataframe(
             display_df,
             column_config={
