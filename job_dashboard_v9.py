@@ -1050,27 +1050,47 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             company = clean_text(company_el.get_text(" ", strip=True)) if company_el else ""
             location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
 
-            full_page_text = ""
+            eligibility_text = ""
+
             try:
-                job_page = requests.get(href, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+                job_page = requests.get(
+                    href,
+                    headers={"User-Agent": "Mozilla/5.0"},
+                    timeout=30
+                )
+            
                 if job_page.status_code == 200:
-                    job_soup = BeautifulSoup(job_page.text, "html.parser")
-                    def extract_who_can_apply(job_soup):
-                        text = job_soup.get_text("\n", strip=True)
-                    
-                        start = text.find("Who can apply for this job")
-                        if start == -1:
-                            return ""
-                    
-                        end = text.find("Advertised until", start)
-                    
+            
+                    job_soup = BeautifulSoup(
+                        job_page.text,
+                        "html.parser"
+                    )
+            
+                    text = job_soup.get_text("\n", strip=True)
+            
+                    start = text.find("Who can apply for this job")
+            
+                    if start != -1:
+            
+                        end = text.find(
+                            "Advertised until",
+                            start
+                        )
+            
                         if end == -1:
                             end = start + 3000
-                    
-                        return text[start:end]
+            
+                        eligibility_text = text[start:end]
+            
             except Exception:
                 pass
             eligibility_text = extract_who_can_apply(job_soup)
+            st.write(
+                "Eligibility length:",
+                len(eligibility_text)
+            )
+
+            
             jobs.append({
                 "source": "Job Bank Canada",
                 "country": "Canada",
@@ -1083,11 +1103,11 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             })
 
         return jobs
-        st.write("Job Bank cards found:", len(cards))
-        st.write("Jobs extracted:", len(jobs))
 
     except Exception as e:
         st.error(f"Job Bank error: {e}")
+        st.write("Job Bank cards found:", len(cards))
+        st.write("Jobs extracted:", len(jobs))
         return jobs
 # ============================================================
 # STREAMLIT UI
