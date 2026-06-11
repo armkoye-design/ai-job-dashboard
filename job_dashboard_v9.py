@@ -1610,7 +1610,7 @@ if search_clicked:
                 all_jobs.append(job)
                 
         
-        # 9) Custom source URL
+        # 10) Custom source URL
         if custom_source_url.strip():
             
         
@@ -1632,7 +1632,7 @@ if search_clicked:
                 all_jobs.append(job)
 
     
-         # 10) Score jobs
+         # 11) Score jobs
        
         rows = []
         progress = st.progress(0)
