@@ -927,6 +927,8 @@ def fetch_undp_jobs():
             "url": url,
             "tags": ["UNDP"],
         })
+        
+        st.write(full_page_text[:2000])
 
     except Exception:
         pass
@@ -1045,7 +1047,21 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
             company = clean_text(company_el.get_text(" ", strip=True)) if company_el else ""
             location = clean_text(location_el.get_text(" ", strip=True)) if location_el else ""
             desc = clean_text(date_el.get_text(" ", strip=True)) if date_el else ""
+
+            job_page = requests.get(
+                href,
+                headers={"User-Agent": "Mozilla/5.0"},
+                timeout=30
+            )
             
+            full_page_text = ""
+            
+            if job_page.status_code == 200:
+                job_soup = BeautifulSoup(job_page.text, "html.parser")
+            
+                full_page_text = clean_text(
+                    job_soup.get_text(" ", strip=True)
+                )
                         
             jobs.append({
                 "source": "Job Bank Canada",
@@ -1053,7 +1069,7 @@ def fetch_job_bank_canada(query: str, limit: int = 50) -> List[Dict]:
                 "title": title,
                 "company": company,
                 "location": location,
-                "description": desc,
+                "description": full_page_text,
                 "url": href,
                 "tags": [],
             })
@@ -1633,7 +1649,6 @@ if search_clicked:
     
          # 10) Score jobs
        
-        
         rows = []
         progress = st.progress(0)
            
@@ -1677,16 +1692,36 @@ if search_clicked:
             score = query_match_score(job, query)
             ai = heuristic_score(job)
 
+            text = (
+                job.get("title", "") + " " +
+                job.get("description", "")
+            ).lower()
+            
             if job.get("source") == "Job Bank Canada":
 
-                if score >= 90:
-                    ai["visa_likelihood"] = 15
+                if job.get("source") == "Job Bank Canada":
+                    st.write(text[:1000])
             
-                elif score >= 70:
-                    ai["visa_likelihood"] = 10
+                if any(x in text for x in [
+                    "other candidates",
+                    "with or without a valid canadian work permit",
+                    "international candidates",
+                    "foreign candidates",
+                    "can apply"
+                ]):
+                    ai["visa_likelihood"] = 90
             
-                elif score >= 50:
+                elif any(x in text for x in [
+                    "do not apply if you are not authorized to work in canada",
+                    "canadian citizen",
+                    "permanent resident of canada",
+                    "temporary resident of canada with a valid work permit",
+                    "you must be legally entitled to work in canada"
+                ]):
                     ai["visa_likelihood"] = 0
+            
+                else:
+                    ai["visa_likelihood"] = 20
 
             # -----------------------------------
             # Canada Job Bank visa override
