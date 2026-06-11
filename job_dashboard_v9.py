@@ -1658,7 +1658,13 @@ if search_clicked:
          #       job for job in all_jobs
           #      if job.get("country") != "Remote/Global"
           #  ]
-        
+
+
+        st.write("All jobs collected:", len(all_jobs))
+    
+        if len(all_jobs) > 0:
+            st.write(all_jobs[0])
+    
         total = max(len(all_jobs), 1)
         
         
@@ -1673,7 +1679,11 @@ if search_clicked:
 
             text = job.get("description", "").lower()
 
+            # DEBUG
             if job.get("source") == "Job Bank Canada":
+                st.write("URL:", job["url"])
+                st.write("TEXT:", text[:1000])
+
             
                 if (
                     "other candidates" in text
