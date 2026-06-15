@@ -1921,12 +1921,15 @@ if search_clicked:
                 "Description": job.get("description", "")[:3000],
             })
 
+
+        st.write("ROWS BEFORE DF:", len(rows))
+
             
             
     
         df = pd.DataFrame(rows)
     
-           
+        st.write("ROWS AFTER DF:", len(df)) 
 
         if "Visa_Likelihood" in df.columns:
             
