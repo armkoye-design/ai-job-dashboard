@@ -1,7 +1,7 @@
 import json
 import re
 from typing import Dict, List, Optional
-from urllib.parse import urljoin, urlparse
+from urllib.parse impfort urljoin, urlparse
 from xml.etree import ElementTree as ET
 
 
@@ -603,6 +603,22 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if len(title) < 8:
                 continue
             if title.lower() in GENERIC_TITLE_SKIP:
+                continue
+
+            # Skip category/search pages
+            if "/visa_sponsorship" in href_l:
+                continue
+            
+            if "/canton-" in href_l:
+                continue
+            
+            if "/city-" in href_l:
+                continue
+            
+            if "/region-" in href_l:
+                continue
+            
+            if href.endswith(".txt"):
                 continue
            # TEMP DEBUG    
            # if not any(x in href_l for x in ["/job", "/jobs/", "/in/"]):
@@ -1918,7 +1934,12 @@ if search_clicked:
     
            
 
-        df = df[df["Visa_Likelihood"] > 0]
+        if "Visa_Likelihood" in df.columns:
+            
+            df = df[df["Visa_Likelihood"] > 0]
+        else:
+            st.warning("No jobs found.")
+            st.stop()
         
         if not df.empty and "Query_Match" in df.columns:
             
