@@ -1752,6 +1752,8 @@ if search_clicked:
             visa_evidence = ""
             
             if job.get("source") == "Job Bank Canada":
+                st.write(job["title"])
+                st.write(len(job.get("description", "")))
                 
                 if any(x in text for x in [
                     "other candidates",
