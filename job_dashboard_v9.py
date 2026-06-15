@@ -693,6 +693,17 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 continue
                 
             st.write("ADDING:", title)
+
+            bad_url_parts = [
+                "/visa_sponsorship",
+                "/canton-",
+                "/city-",
+                "/region-",
+                "/jobs-in-",
+            ]
+            
+            if any(x in href_l for x in bad_url_parts):
+                continue
             
             found.append(normalize_job({
                 "source": "EnglishJobs",
