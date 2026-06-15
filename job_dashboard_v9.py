@@ -592,7 +592,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
             context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
             combined = f"{title} {context}".lower()
-            if not is_candidate_text(combined):
+            #if not is_candidate_text(combined):
                 continue
             if href in seen_urls:
                 continue
@@ -618,6 +618,11 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                     full_text = clean_text(
                         detail_soup.get_text(" ", strip=True)
                     )[:15000]
+
+                    st.write("URL:", href)
+                    st.write("STATUS:", detail_resp.status_code)
+                    st.write("FINAL URL:", detail_resp.url)
+                    st.write("LEN:", len(full_text))
             
             except Exception:
                 pass
@@ -668,7 +673,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             if not any(term in title_l for term in good_job_terms):
                 continue
-            
+                
+            st.write("ADDING:", title)
             
             found.append(normalize_job({
                 "source": "EnglishJobs",
