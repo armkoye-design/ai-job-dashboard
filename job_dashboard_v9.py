@@ -1783,31 +1783,25 @@ if search_clicked:
             ]:
             
                 if any(x in text for x in [
-                    "visa sponsorship",
-                    "visa support",
-                    "work permit support",
-                    "relocation package",
-                    "international applicants",
-                    "foreign applicants",
-                    "english required",
-                    "working language is english",
-                    "no german required",
-                    "sponsorship available",
-                ]):
-                    ai["visa_likelihood"] = 90
-                    ai["english_fit"] = 90
-            
-                elif any(x in text for x in [
-                    "eu citizens only",
+                    "cannot provide visa sponsorship",
+                    "no visa sponsorship",
+                    "without visa sponsorship",
+                    "must already have work authorization",
                     "must have right to work",
-                    "already authorized to work",
-                    "must be eligible to work",
-                    "german required",
-                    "fluent german",
-                    "native german",
+                    "eu citizens only",
                 ]):
                     ai["visa_likelihood"] = 0
-            
+                
+                elif any(x in text for x in [
+                    "visa sponsorship available",
+                    "visa support provided",
+                    "work permit sponsorship",
+                    "relocation package",
+                    "international applicants welcome",
+                    "foreign applicants welcome",
+                ]):
+                    ai["visa_likelihood"] = 90
+                
                 else:
                     ai["visa_likelihood"] = max(
                         ai["visa_likelihood"],
