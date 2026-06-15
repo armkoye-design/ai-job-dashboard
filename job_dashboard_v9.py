@@ -597,6 +597,30 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if href in seen_urls:
                 continue
             seen_urls.add(href)
+
+            full_text = ""
+            context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
+            
+            try:
+                detail_resp = SESSION.get(
+                    href,
+                    timeout=20,
+                    allow_redirects=True,
+                )
+            
+                if detail_resp.status_code < 400:
+            
+                    detail_soup = BeautifulSoup(
+                        detail_resp.text,
+                        "html.parser"
+                    )
+            
+                    full_text = clean_text(
+                        detail_soup.get_text(" ", strip=True)
+                    )[:15000]
+            
+            except Exception:
+                pass
             
             title_l = title.lower()
 
@@ -698,7 +722,7 @@ def fetch_relocate_me() -> List[Dict]:
             continue
 
         context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
-        combined = f"{title} {context}".lower()
+        combined = f"{title} {context} {full_text[:1000]}".lower()
         if not is_candidate_text(combined):
             continue
         if href in seen_urls:
@@ -713,6 +737,10 @@ def fetch_relocate_me() -> List[Dict]:
             if c.lower() in combined:
                 inferred_country = c
                 break
+                
+        st.write("TITLE:", title)
+        st.write("URL:", href)
+        st.write("LEN:", len(full_text))
 
         found.append(normalize_job({
             "source": "Relocate.me",
@@ -720,7 +748,7 @@ def fetch_relocate_me() -> List[Dict]:
             "title": title,
             "company": "",
             "location": inferred_country,
-            "description": context[:2500],
+            "description": full_text if full_text else context[:2500],
             "url": href,
             "tags": [],
         }))
@@ -1760,8 +1788,6 @@ if search_clicked:
                 st.write("LEN:", len(job.get("description", "")))
             
                 st.write(job.get("description", "")[:1000])
-            
-                break
                 
                 if any(x in text for x in [
                     "other candidates",
