@@ -580,6 +580,24 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
         for a in soup.find_all("a", href=True):
             title = clean_text(a.get_text(" ", strip=True))
             href = urljoin(base, a["href"])
+
+            if "redirect" in href.lower():
+                continue
+            
+            if "clickout" in href.lower():
+                continue
+            
+            if "talent.com" in href.lower():
+                continue
+            if href.endswith(".txt"):
+                continue
+            
+            if href.endswith(".xml"):
+                continue
+            
+            if href.endswith(".pdf"):
+                continue
+            
             href_l = href.lower()
 
             if len(title) < 8:
