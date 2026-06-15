@@ -593,7 +593,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
             combined = f"{title} {context}".lower()
             #if not is_candidate_text(combined):
-                continue
+             #   continue
             if href in seen_urls:
                 continue
             seen_urls.add(href)
