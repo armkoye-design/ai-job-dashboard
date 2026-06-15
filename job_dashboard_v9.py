@@ -1744,7 +1744,10 @@ if search_clicked:
             ai = heuristic_score(job)
             
             eligibility = str(job.get("eligibility", "")).lower()
-            text = eligibility
+            text = (
+                str(job.get("eligibility", "")) + " " +
+                str(job.get("description", ""))
+            ).lower()
             
             visa_evidence = ""
             
@@ -1770,9 +1773,6 @@ if search_clicked:
             
                 else:
                     ai["visa_likelihood"] = 20
-                    
-         
-
             
             special_sources = [
                 "UN Careers",
@@ -1790,7 +1790,47 @@ if search_clicked:
             if job.get("source") in special_sources:
                 ai["relevance"] = 100
                 ai["query_match"] = 100
-           
+
+    
+       elif job.get("source") in [
+            "EnglishJobs",
+            "Relocate.me",
+            "EURES",
+            "SerpAPI",
+        ]:
+        
+            if any(x in text for x in [
+                "visa sponsorship",
+                "visa support",
+                "work permit support",
+                "relocation package",
+                "international applicants",
+                "foreign applicants",
+                "english required",
+                "working language is english",
+                "no german required",
+                "sponsorship available",
+            ]):
+                ai["visa_likelihood"] = 90
+                ai["english_fit"] = 90
+        
+            elif any(x in text for x in [
+                "eu citizens only",
+                "must have right to work",
+                "already authorized to work",
+                "must be eligible to work",
+                "german required",
+                "fluent german",
+                "native german",
+            ]):
+                ai["visa_likelihood"] = 0
+        
+            else:
+                ai["visa_likelihood"] = max(
+                    ai["visa_likelihood"],
+                    20
+                )
+        
             rows.append({
                 "Source": job.get("source", ""),
                 "Country": job.get("country", ""),
