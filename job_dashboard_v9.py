@@ -1318,7 +1318,7 @@ if "Development Bank" in organization_types:
                 selected_sources.append(src)
 
 min_visa = st.sidebar.slider("Min Visa Likelihood", 0, 100, 0)
-min_relevance = st.sidebar.slider("Min Relevance", 0, 100, 0)
+min_relevance = st.sidebar.slider("Min Job Description Match", 0, 100, 0)
 min_english = st.sidebar.slider("Min English Fit", 0, 100, 0)
 only_high_fit = st.sidebar.checkbox("Show only high-fit jobs", value=False)
 include_remote_jobs = st.sidebar.checkbox(
