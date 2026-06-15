@@ -701,12 +701,15 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "scientist",
                 "administrator",
             ]
+
+            st.write("TITLE =", title)
+            st.write("HREF =", href)
             
             if any(term in title_l for term in bad_terms):
                 continue
             
-            if not any(term in title_l for term in good_job_terms):
-                continue
+            #if not any(term in title_l for term in good_job_terms):
+             #   continue
                 
             st.write("ADDING:", title)
 
