@@ -727,7 +727,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "title": title,
                 "company": "",
                 "location": country,
-                "description": context[:2500],
+                "description": full_text if full_text else context[:2500],
                 "url": href,
                 "tags": [],
             }))
@@ -1830,15 +1830,9 @@ if search_clicked:
             
             visa_evidence = ""
             
-            if job.get("source") == "EnglishJobs":
+            if job.get("source") == "Job Bank Canada":
 
-                st.write("TITLE:", job["title"])
-            
-                st.write("URL:", job["url"])
-            
-                st.write("LEN:", len(job.get("description", "")))
-            
-                st.write(job.get("description", "")[:1000])
+              
                 
                 if any(x in text for x in [
                     "other candidates",
@@ -1943,7 +1937,7 @@ if search_clicked:
         
         if not df.empty and "Query_Match" in df.columns:
             
-            df = df[df["Query_Match"] >= 35]
+            df = df[df["Query_Match"] >= 10]
             
         
         
