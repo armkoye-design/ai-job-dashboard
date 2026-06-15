@@ -1,7 +1,7 @@
 import json
 import re
 from typing import Dict, List, Optional
-from urllib.parse impfort urljoin, urlparse
+from urllib.parse import urljoin, urlparse
 from xml.etree import ElementTree as ET
 
 
