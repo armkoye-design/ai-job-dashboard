@@ -336,20 +336,25 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     return False
     
 def query_match_score(job: Dict, search_query: str) -> int:
-    title = (job.get("title", "") or "").lower().strip()
+
+    text = (
+        str(job.get("title", "")) + " " +
+        str(job.get("description", ""))[:3000]
+    ).lower()
+
     query = (search_query or "").lower().strip()
 
-    if not title or not query:
+    if not text or not query:
         return 0
 
-    title = re.sub(r"[^a-z0-9\s]+", " ", title)
+    text = re.sub(r"[^a-z0-9\s]+", " ", text)
     query = re.sub(r"[^a-z0-9\s]+", " ", query)
 
-    title = re.sub(r"\s+", " ", title).strip()
+    text = re.sub(r"\s+", " ", text).strip()
     query = re.sub(r"\s+", " ", query).strip()
 
     query_words = [w for w in query.split() if len(w) > 2]
-    title_words = title.split()
+    text_words = text.split()
     
     synonyms = {
         "analyst": ["analytics", "analysis", "research"],
@@ -360,29 +365,22 @@ def query_match_score(job: Dict, search_query: str) -> int:
     
     for word in query_words:
     
-        if word in title_words:
+        if word in text_words:
             matches += 1
             continue
     
         if word in synonyms:
-            if any(s in title_words for s in synonyms[word]):
+            if any(s in text_words for s in synonyms[word]):
                 matches += 1
     
-    # all words matched
     if matches == len(query_words):
-        return 90
-        
-    # Query Title
-    if query in title:
-        return 90
+    return 100
+
+    elif matches >= max(1, len(query_words) - 1):
+        return 70
     
-    # almost all words matched
-    if matches == len(query_words) - 1:
-        return 35
-    
-    # one keyword matched
-    if matches == 1:
-        return 10
+    elif matches > 0:
+        return 40
     
     return 0
 
