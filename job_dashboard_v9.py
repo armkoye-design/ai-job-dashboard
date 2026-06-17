@@ -640,10 +640,6 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                         detail_soup.get_text(" ", strip=True)
                     )[:15000]
 
-                    st.write("URL:", href)
-                    st.write("STATUS:", detail_resp.status_code)
-                    st.write("FINAL URL:", detail_resp.url)
-                    st.write("LEN:", len(full_text))
             
             except Exception:
                 pass
@@ -689,8 +685,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "administrator",
             ]
 
-            st.write("TITLE =", title)
-            st.write("HREF =", href)
+            #st.write("TITLE =", title)
+            #st.write("HREF =", href)
             
             if any(term in title_l for term in bad_terms):
                 continue
@@ -698,7 +694,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             #if not any(term in title_l for term in good_job_terms):
              #   continue
                 
-            st.write("ADDING:", title)
+            #st.write("ADDING:", title)
 
             bad_url_parts = [
                 "/visa_sponsorship",
@@ -709,6 +705,29 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             ]
             
             if any(x in href_l for x in bad_url_parts):
+                continue
+
+            href_l = href.lower()
+            title_l = title.lower()
+            
+            bad_domains = [
+                "wikipedia.org",
+            ]
+            
+            bad_words = [
+                "wikipedia",
+                "city",
+                "country",
+                "visa",
+                "salary",
+                "cost of living",
+                "immigration",
+            ]
+            
+            if any(x in href_l for x in bad_domains):
+                continue
+            
+            if any(x in title_l for x in bad_words):
                 continue
             
             found.append(normalize_job({
@@ -779,9 +798,7 @@ def fetch_relocate_me() -> List[Dict]:
                 inferred_country = c
                 break
                 
-        st.write("TITLE:", title)
-        st.write("URL:", href)
-        st.write("LEN:", len(full_text))
+        
 
         found.append(normalize_job({
             "source": "Relocate.me",
@@ -1912,24 +1929,24 @@ if search_clicked:
             })
 
 
-        st.write("ROWS BEFORE DF:", len(rows))
+        #st.write("ROWS BEFORE DF:", len(rows))
 
             
             
     
         df = pd.DataFrame(rows)
 
-        st.write("COLUMNS:", list(df.columns))
+        #st.write("COLUMNS:", list(df.columns))
 
-        st.write(df[[
-            "title",
+        #st.write(df[[
+            "Title",
             "Visa_Likelihood",
             "Query_Match",
             "English_Fit",
             "Relevance"
         ]].head(20))
     
-        st.write("ROWS AFTER DF:", len(df)) 
+       
 
         if "Visa_Likelihood" in df.columns:
             
