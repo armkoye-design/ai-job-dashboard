@@ -801,7 +801,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "title": title,
                 "company": "",
                 "location": country,
-                "description": context[:2500],
+                "description": context[:15000],
                 "url": href,
                 "tags": [],
             })
@@ -1912,6 +1912,11 @@ if search_clicked:
                 str(job.get("eligibility", "")) + " " +
                 str(job.get("description", ""))
             ).lower()
+
+            st.write("TITLE:", job.get("title"))
+            st.write("DESCRIPTION LEN:", len(str(job.get("description",""))))
+            st.write("DESCRIPTION SAMPLE:")
+            st.write(str(job.get("description",""))[:500])
             
             visa_evidence = ""
             
