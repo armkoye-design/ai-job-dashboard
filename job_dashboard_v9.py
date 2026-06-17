@@ -1938,7 +1938,7 @@ if search_clicked:
 
         #st.write("COLUMNS:", list(df.columns))
 
-        #st.write(df[[
+        st.write(df[[
             "Title",
             "Visa_Likelihood",
             "Query_Match",
