@@ -584,7 +584,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             href_l = href.lower()
 
-            for a in soup.find_all("a", href=True):
+            if "/in/" in href_l and "/english" in href_l:
+                continue
 
             if len(title) < 8:
                 continue
