@@ -732,8 +732,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             #st.write("TITLE =", title)
             #st.write("HREF =", href)
             
-            if any(term in title_l for term in bad_terms):
-                continue
+            #if any(term in title_l for term in bad_terms):
+             #   continue
             
             #if not any(term in title_l for term in good_job_terms):
              #  continue
@@ -749,8 +749,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "/jobs-in-",
             ]
             
-            if any(x in href_l for x in bad_url_parts):
-                continue
+            #if any(x in href_l for x in bad_url_parts):
+            #    continue
 
             href_l = href.lower()
             title_l = title.lower()
@@ -769,24 +769,30 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "immigration",
             ]
             
-            if any(x in href_l for x in bad_domains):
-                continue
+            #if any(x in href_l for x in bad_domains):
+             #   continue
             
-            if any(x in title_l for x in bad_words):
-                continue
-            if len(title.split()) <= 1:
-                continue
-            st.success(f"ABOUT TO ADD: {title}")
-            found.append(normalize_job({
+            #if any(x in title_l for x in bad_words):
+            #    continue
+            #if len(title.split()) <= 1:
+             #   continue
+            st.write("TITLE=", title)
+            st.write("HREF=", href)
+            st.success("REACHED APPEND")
+            job_item = normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
                 "title": title,
                 "company": "",
                 "location": country,
-                "description": full_text if full_text else context[:2500],
+                "description": context[:2500],
                 "url": href,
                 "tags": [],
-            }))
+            })
+            
+            st.write("JOB_ITEM:", job_item)
+            
+            found.append(job_item)
 
             st.write("LINKS SEEN:", links_seen)
             st.write("CANDIDATE PASS:", candidate_pass)
