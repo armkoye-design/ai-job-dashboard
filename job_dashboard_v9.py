@@ -584,6 +584,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             href_l = href.lower()
 
+            for a in soup.find_all("a", href=True):
+
             if len(title) < 8:
                 continue
             if title.lower() in GENERIC_TITLE_SKIP:
@@ -1915,6 +1917,16 @@ if search_clicked:
             
     
         df = pd.DataFrame(rows)
+
+        st.write("COLUMNS:", list(df.columns))
+
+        st.write(df[[
+            "title",
+            "Visa_Likelihood",
+            "Query_Match",
+            "English_Fit",
+            "Relevance"
+        ]].head(20))
     
         st.write("ROWS AFTER DF:", len(df)) 
 
