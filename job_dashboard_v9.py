@@ -373,16 +373,16 @@ def query_match_score(job: Dict, search_query: str) -> int:
             if any(s in text_words for s in synonyms[word]):
                 matches += 1
     
-        if matches == len(query_words):
-        return 100
+    if matches == len(query_words):
+    return 100
+
+    elif matches >= max(1, len(query_words) - 1):
+        return 70
     
-        elif matches >= max(1, len(query_words) - 1):
-            return 70
-        
-        elif matches > 0:
-            return 40
-        
-        return 0
+    elif matches > 0:
+        return 40
+    
+    return 0
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
