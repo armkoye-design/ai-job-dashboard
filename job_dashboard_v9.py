@@ -337,6 +337,8 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     
 def query_match_score(job: Dict, search_query: str) -> int:
 
+    title = str(job.get("title", "")).lower()
+
     text = (
         str(job.get("title", "")) + " " +
         str(job.get("description", ""))[:3000]
@@ -361,26 +363,28 @@ def query_match_score(job: Dict, search_query: str) -> int:
         "data": ["dataset", "analytics"],
     }
     
-    matches = 0
+    title_matches = 0
     
     for word in query_words:
     
-        if word in text_words:
-            matches += 1
+        if word in title:
+            title_matches += 1
             continue
     
         if word in synonyms:
             if any(s in text_words for s in synonyms[word]):
                 matches += 1
     
-    if matches == len(query_words):
+    if title_matches == len(query_words):
         return 100
 
-    elif matches >= max(1, len(query_words) - 1):
-        return 70
+    elif matches == len(query_words):
+        return 80
     
+    elif title_matches > 0:
+        return 60
     elif matches > 0:
-        return 40
+        return 30
     
     return 0
 
@@ -2078,7 +2082,7 @@ if search_clicked:
         
         if not df.empty and "Query_Match" in df.columns:
             
-            df = df[df["Query_Match"] >= 10]
+            df = df[df["Query_Match"] >= 80]
             
         
         
