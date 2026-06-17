@@ -2019,8 +2019,8 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             ]
         ].copy()
         
-        display_df = df.rename
-            (columns={
+        display_df = df.rename(
+            columns={
                 "Query_Match": "Keyword Match",
                 "Relevance": "Job Description Match",
                 "English_Fit": "English Fit",
