@@ -570,7 +570,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
     title_pass = 0
     for path in seeds:
         url = urljoin(base, path)
-        st.write("SEED URL:", url)
+       
         try:
             resp = SESSION.get(url, timeout=20)
             if resp.status_code >= 400:
@@ -583,7 +583,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
         links = soup.find_all("a", href=True)
 
-        st.write("LINKS FOUND:", len(links))
+        
 
         
         for a in soup.find_all("a", href=True):
@@ -594,7 +594,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             href = urljoin(base, a["href"])
             href_l = href.lower()
 
-            st.write("MATCH TEST:", href_l)
+            
 
             for token in [
                 "/canton-",
@@ -605,7 +605,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 if token in href_l:
                     st.error(f"MATCHED TOKEN: {token}")
 
-            st.write("CHECKING:", href)
+           
 
             bad_domains = [
                 "wikipedia.org",
@@ -665,7 +665,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
              #   continue
             candidate_pass += 1
                 
-            st.write("TITLE =", title)
+           
             
             if href in seen_urls:
                 continue
@@ -792,8 +792,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             #    continue
             #if len(title.split()) <= 1:
              #   continue
-            st.write("TITLE=", title)
-            st.write("HREF=", href)
+           
             st.success("REACHED APPEND")
             job_item = normalize_job({
                 "source": "EnglishJobs",
@@ -806,16 +805,12 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "tags": [],
             })
             
-            st.write("JOB_ITEM:", job_item)
+           
             
             found.append(job_item)
 
-            st.write("LINKS SEEN:", links_seen)
-            st.write("CANDIDATE PASS:", candidate_pass)
-            st.write("TITLE PASS:", title_pass)
-            st.write("FOUND:", len(found))
-            st.error(f"RETURNING {len(found)} JOBS")
-            st.error(f"RETURN RETURN RETURN {len(found)}")
+           
+           
 
     return found
    
@@ -1092,7 +1087,7 @@ def fetch_undp_jobs():
             "tags": ["UNDP"],
         })
         
-        st.write(full_page_text[:2000])
+       
 
     except Exception:
         pass
@@ -1913,10 +1908,13 @@ if search_clicked:
                 str(job.get("description", ""))
             ).lower()
 
-            st.write("TITLE:", job.get("title"))
-            st.write("DESCRIPTION LEN:", len(str(job.get("description",""))))
-            st.write("DESCRIPTION SAMPLE:")
-            st.write(str(job.get("description",""))[:500])
+            if job.get("source") == "EnglishJobs":
+                ai["visa_likelihood"] = max(
+                    ai["visa_likelihood"],
+                    50
+                )
+
+            
             
             visa_evidence = ""
             
@@ -2005,7 +2003,7 @@ if search_clicked:
                     ai["english_fit"] = 0
             
                 else:
-                    ai["english_fit"] = 35
+                    ai["english_fit"] = 90
             
                 
             
