@@ -570,6 +570,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
     title_pass = 0
     for path in seeds:
         url = urljoin(base, path)
+        st.write("SEED URL:", url)
         try:
             resp = SESSION.get(url, timeout=20)
             if resp.status_code >= 400:
@@ -594,6 +595,17 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
             
             href_l = href.lower()
+
+            bad_domains = [
+                "wikipedia.org",
+                "wikidata.org",
+                "facebook.com",
+                "instagram.com",
+                "youtube.com",
+            ]
+            
+            if any(x in href_l for x in bad_domains):
+                continue
 
             if any(x in href_l for x in [
                 "/canton-",
