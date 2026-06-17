@@ -577,6 +577,12 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             continue
 
         soup = BeautifulSoup(html, "html.parser")
+
+        links = soup.find_all("a", href=True)
+
+        st.write("LINKS FOUND:", len(links))
+
+        
         for a in soup.find_all("a", href=True):
             title = clean_text(a.get_text(" ", strip=True))
             href = urljoin(base, a["href"])
