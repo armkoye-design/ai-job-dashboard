@@ -776,6 +776,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 continue
             if len(title.split()) <= 1:
                 continue
+            st.success(f"ABOUT TO ADD: {title}")
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
