@@ -628,8 +628,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
             context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
             combined = f"{title} {context}".lower()
-            if not is_candidate_text(combined):
-                continue
+            #if not is_candidate_text(combined):
+             #   continue
                 
             st.write("TITLE =", title)
             
@@ -717,8 +717,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if any(term in title_l for term in bad_terms):
                 continue
             
-            if not any(term in title_l for term in good_job_terms):
-               continue
+            #if not any(term in title_l for term in good_job_terms):
+             #  continue
                 
             #st.write("ADDING:", title)
 
