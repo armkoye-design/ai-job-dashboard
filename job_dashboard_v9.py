@@ -374,7 +374,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
                 matches += 1
     
     if matches == len(query_words):
-    return 100
+        return 100
 
     elif matches >= max(1, len(query_words) - 1):
         return 70
