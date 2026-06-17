@@ -946,7 +946,7 @@ def parse_custom_source(url: str) -> List[Dict]:
             "title": title,
             "company": "",
             "location": "",
-            "description": context[:2500],
+            "description": context[:15000],
             "url": href,
             "tags": [],
         }))
@@ -1885,6 +1885,54 @@ if search_clicked:
                 "EURES",
                 "SerpAPI",
             ]:
+
+                # Visa logic
+                if any(x in text for x in [
+                    "visa sponsorship",
+                    "visa support",
+                    "work permit support",
+                    "relocation package",
+                    "international applicants",
+                    "foreign applicants",
+                    "sponsorship available",
+                ]):
+                    ai["visa_likelihood"] = 90
+            
+                elif any(x in text for x in [
+                    "eu citizens only",
+                    "must have right to work",
+                    "already authorized to work",
+                    "must be eligible to work",
+                ]):
+                    ai["visa_likelihood"] = 0
+            
+                else:
+                    ai["visa_likelihood"] = 20
+            
+                # English Fit logic
+                if any(x in text for x in [
+                    "english required",
+                    "fluent english",
+                    "excellent english",
+                    "business english",
+                    "english speaking",
+                    "working language is english",
+                    "english is the company language",
+                ]):
+                    ai["english_fit"] = 90
+            
+                elif any(x in text for x in [
+                    "german required",
+                    "fluent german",
+                    "native german",
+                    "must speak german",
+                    "german language skills",
+                    "deutsch",
+                ]):
+                    ai["english_fit"] = 0
+            
+                else:
+                    ai["english_fit"] = 35
             
                 if any(x in text for x in [
                     "cannot provide visa sponsorship",
