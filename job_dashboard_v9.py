@@ -565,7 +565,9 @@ def fetch_serpapi_jobs(query: str, country: str, api_key: str) -> List[Dict]:
 def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> List[Dict]:
     found = []
     seen_urls = set()
-
+    links_seen = 0
+    candidate_pass = 0
+    title_pass = 0
     for path in seeds:
         url = urljoin(base, path)
         try:
@@ -584,6 +586,9 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
         
         for a in soup.find_all("a", href=True):
+
+            links_seen += 1
+            
             title = clean_text(a.get_text(" ", strip=True))
             href = urljoin(base, a["href"])
 
@@ -630,6 +635,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             combined = f"{title} {context}".lower()
             #if not is_candidate_text(combined):
              #   continue
+            candidate_pass += 1
                 
             st.write("TITLE =", title)
             
@@ -719,6 +725,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             #if not any(term in title_l for term in good_job_terms):
              #  continue
+            title_pass += 1
                 
             #st.write("ADDING:", title)
 
@@ -768,8 +775,13 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "tags": [],
             }))
 
-    return found
+            st.write("LINKS SEEN:", links_seen)
+            st.write("CANDIDATE PASS:", candidate_pass)
+            st.write("TITLE PASS:", title_pass)
+            st.write("FOUND:", len(found))
 
+    return found
+   
 
 def fetch_relocate_me() -> List[Dict]:
     url = "https://relocate.me/international-jobs"
