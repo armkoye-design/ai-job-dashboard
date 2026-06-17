@@ -1886,26 +1886,34 @@ if search_clicked:
                 "SerpAPI",
             ]:
 
-                # Visa logic
+                # Visa Likelihood
                 if any(x in text for x in [
-                    "visa sponsorship",
-                    "visa support",
-                    "work permit support",
-                    "relocation package",
-                    "international applicants",
-                    "foreign applicants",
-                    "sponsorship available",
-                ]):
-                    ai["visa_likelihood"] = 90
-            
-                elif any(x in text for x in [
-                    "eu citizens only",
+                    "cannot provide visa sponsorship",
+                    "no visa sponsorship",
+                    "without visa sponsorship",
+                    "must already have work authorization",
                     "must have right to work",
+                    "eu citizens only",
                     "already authorized to work",
                     "must be eligible to work",
                 ]):
                     ai["visa_likelihood"] = 0
-            
+                
+                elif any(x in text for x in [
+                    "visa sponsorship",
+                    "visa sponsorship available",
+                    "visa support",
+                    "visa support provided",
+                    "work permit sponsorship",
+                    "work permit support",
+                    "relocation package",
+                    "international applicants",
+                    "international applicants welcome",
+                    "foreign applicants",
+                    "foreign applicants welcome",
+                ]):
+                    ai["visa_likelihood"] = 90
+                
                 else:
                     ai["visa_likelihood"] = 20
             
@@ -1934,31 +1942,7 @@ if search_clicked:
                 else:
                     ai["english_fit"] = 35
             
-                if any(x in text for x in [
-                    "cannot provide visa sponsorship",
-                    "no visa sponsorship",
-                    "without visa sponsorship",
-                    "must already have work authorization",
-                    "must have right to work",
-                    "eu citizens only",
-                ]):
-                    ai["visa_likelihood"] = 0
                 
-                elif any(x in text for x in [
-                    "visa sponsorship available",
-                    "visa support provided",
-                    "work permit sponsorship",
-                    "relocation package",
-                    "international applicants welcome",
-                    "foreign applicants welcome",
-                ]):
-                    ai["visa_likelihood"] = 90
-                
-                else:
-                    ai["visa_likelihood"] = max(
-                        ai["visa_likelihood"],
-                        20
-                    )
             
             special_sources = [
                 "UN Careers",
@@ -1998,7 +1982,7 @@ if search_clicked:
         #st.write("ROWS BEFORE DF:", len(rows))
 
             
-            
+        st.write("SCRAPED JOBS:", len(all_jobs))    
     
         df = pd.DataFrame(rows)
 
