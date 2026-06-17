@@ -592,9 +592,18 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             title = clean_text(a.get_text(" ", strip=True))
             href = urljoin(base, a["href"])
-
-            
             href_l = href.lower()
+
+            st.write("MATCH TEST:", href_l)
+
+            for token in [
+                "/canton-",
+                "/region-",
+                "/city-",
+                "/visa_sponsorship",
+            ]:
+                if token in href_l:
+                    st.error(f"MATCHED TOKEN: {token}")
 
             st.write("CHECKING:", href)
 
@@ -613,15 +622,14 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "/canton-",
                 "/region-",
                 "/city-",
-                "/english",
                 "/visa_sponsorship",
             ]):
                 st.error("FILTER 1")
                 continue
             
-            if "/in/" in href_l and "/english" in href_l:
-                st.error("FILTER 2")
-                continue
+            #if "/in/" in href_l and "/english" in href_l:
+             #   st.error("FILTER 2")
+               # continue
             
             if len(title) < 8:
                 st.error("FILTER 3")
