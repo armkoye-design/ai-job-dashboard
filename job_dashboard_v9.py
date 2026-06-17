@@ -624,20 +624,12 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "/city-",
                 "/visa_sponsorship",
             ]):
-                st.error("FILTER 1")
-                continue
+                
             
             #if "/in/" in href_l and "/english" in href_l:
              #   st.error("FILTER 2")
                # continue
-            
-            if len(title) < 8:
-                st.error("FILTER 3")
-                continue
-            
-            if title.lower() in GENERIC_TITLE_SKIP:
-                st.error("FILTER 4")
-                continue
+               
                 
 
             # Skip category/search pages
@@ -793,7 +785,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             #if len(title.split()) <= 1:
              #   continue
            
-            st.success("REACHED APPEND")
+            
             job_item = normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
@@ -1900,6 +1892,32 @@ if search_clicked:
             progress.progress(min(idx / total, 1.0))
         
             score = query_match_score(job, query)
+
+            # NEW QUERY MATCH LOGIC
+            query_words = query.lower().split()
+        
+            title_text = (
+                str(job.get("title", "")) + " " +
+                str(job.get("description", ""))[:3000]
+            ).lower()
+        
+            matches = 0
+        
+            for word in query_words:
+                if word in title_text:
+                    matches += 1
+        
+            if matches == len(query_words):
+                score = 90
+        
+            elif matches > 0:
+                score = 60
+        
+            else:
+                score = 0
+
+
+            
             ai = heuristic_score(job)
             
             eligibility = str(job.get("eligibility", "")).lower()
@@ -1978,7 +1996,7 @@ if search_clicked:
                     ai["visa_likelihood"] = 90
                 
                 else:
-                    ai["visa_likelihood"] = 20
+                    ai["visa_likelihood"] = 40
             
                 # English Fit logic
                 if any(x in text for x in [
