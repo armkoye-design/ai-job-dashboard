@@ -792,7 +792,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             st.write("CANDIDATE PASS:", candidate_pass)
             st.write("TITLE PASS:", title_pass)
             st.write("FOUND:", len(found))
-
+            st.error(f"RETURNING {len(found)} JOBS")
     return found
    
 
