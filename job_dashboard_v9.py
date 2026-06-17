@@ -584,6 +584,15 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             href_l = href.lower()
 
+            if any(x in href_l for x in [
+                "/canton-",
+                "/region-",
+                "/city-",
+                "/english",
+                "/visa_sponsorship",
+            ]):
+                continue
+
             if "/in/" in href_l and "/english" in href_l:
                 continue
 
@@ -613,8 +622,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
             context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
             combined = f"{title} {context}".lower()
-            #if not is_candidate_text(combined):
-             #   continue
+            if not is_candidate_text(combined):
+                continue
             if href in seen_urls:
                 continue
             seen_urls.add(href)
@@ -683,6 +692,14 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "head",
                 "scientist",
                 "administrator",
+                "architect",
+                "researcher",
+                "internship",
+                "intern",
+                "product manager",
+                "data",
+                "database",
+                "business analyst",
             ]
 
             #st.write("TITLE =", title)
@@ -691,8 +708,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             if any(term in title_l for term in bad_terms):
                 continue
             
-            #if not any(term in title_l for term in good_job_terms):
-             #   continue
+            if not any(term in title_l for term in good_job_terms):
+               continue
                 
             #st.write("ADDING:", title)
 
@@ -729,7 +746,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             if any(x in title_l for x in bad_words):
                 continue
-            
+            if len(title.split()) <= 1:
+                continue
             found.append(normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
@@ -782,7 +800,7 @@ def fetch_relocate_me() -> List[Dict]:
             continue
 
         context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
-        combined = f"{title} {context} {full_text[:1000]}".lower()
+        combined = f"{title} {context}".lower()
         if not is_candidate_text(combined):
             continue
         if href in seen_urls:
@@ -1937,14 +1955,6 @@ if search_clicked:
         df = pd.DataFrame(rows)
 
         #st.write("COLUMNS:", list(df.columns))
-
-        st.write(df[[
-            "Title",
-            "Visa_Likelihood",
-            "Query_Match",
-            "English_Fit",
-            "Relevance"
-        ]].head(20))
     
        
 
@@ -1968,7 +1978,7 @@ if search_clicked:
                 )
                 
             
-            
+            st.write("Rows after filters:", len(df))
             st.session_state.results_df = df
         else:
             st.session_state.results_df = pd.DataFrame()
@@ -2009,12 +2019,16 @@ if "results_df" in st.session_state and isinstance(st.session_state.results_df, 
             ]
         ].copy()
         
-        display_df = df.rename(columns={
-            "Query_Match": "Keyword Match",
-            "Relevance": "Job Description Match",
-            "English_Fit": "English Fit",
-            "Visa_Likelihood": "Visa Likelihood"
-        })
+        display_df = df.rename
+            (columns={
+                "Query_Match": "Keyword Match",
+                "Relevance": "Job Description Match",
+                "English_Fit": "English Fit",
+                "Visa_Likelihood": "Visa Likelihood"
+            }
+            inplace=True,
+                              
+        )
         st.dataframe(
             display_df,
             hide_index=True,
