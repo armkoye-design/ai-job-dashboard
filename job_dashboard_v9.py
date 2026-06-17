@@ -622,7 +622,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "/city-",
                 "/visa_sponsorship",
             ]):
-                
+                continue
             
             #if "/in/" in href_l and "/english" in href_l:
              #   st.error("FILTER 2")
@@ -631,20 +631,20 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 
 
             # Skip category/search pages
-            if "/visa_sponsorship" in href_l:
-                continue
+            #if "/visa_sponsorship" in href_l:
+            #    continue
             
-            if "/canton-" in href_l:
-                continue
+            #if "/canton-" in href_l:
+            #    continue
             
-            if "/city-" in href_l:
-                continue
+            #if "/city-" in href_l:
+            #    continue
             
-            if "/region-" in href_l:
-                continue
+            #if "/region-" in href_l:
+            #    continue
             
-            if href.endswith(".txt"):
-                continue
+           # if href.endswith(".txt"):
+           #     continue
            # TEMP DEBUG    
            # if not any(x in href_l for x in ["/job", "/jobs/", "/in/"]):
            #    continue
