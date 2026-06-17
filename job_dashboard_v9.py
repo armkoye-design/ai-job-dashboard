@@ -596,6 +596,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
             href_l = href.lower()
 
+            st.write("CHECKING:", href)
+
             bad_domains = [
                 "wikipedia.org",
                 "wikidata.org",
@@ -614,15 +616,21 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "/english",
                 "/visa_sponsorship",
             ]):
+                st.error("FILTER 1")
                 continue
-
+            
             if "/in/" in href_l and "/english" in href_l:
+                st.error("FILTER 2")
                 continue
-
+            
             if len(title) < 8:
+                st.error("FILTER 3")
                 continue
+            
             if title.lower() in GENERIC_TITLE_SKIP:
+                st.error("FILTER 4")
                 continue
+                
 
             # Skip category/search pages
             if "/visa_sponsorship" in href_l:
@@ -799,6 +807,8 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             st.write("TITLE PASS:", title_pass)
             st.write("FOUND:", len(found))
             st.error(f"RETURNING {len(found)} JOBS")
+            st.error(f"RETURN RETURN RETURN {len(found)}")
+
     return found
    
 
@@ -831,6 +841,8 @@ def fetch_relocate_me() -> List[Dict]:
         
         href = urljoin(url, a["href"])
         href_l = href.lower()
+
+       
 
         if len(title) < 8:
             continue
