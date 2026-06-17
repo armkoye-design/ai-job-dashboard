@@ -357,35 +357,41 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     query_words = [w for w in query.split() if len(w) > 2]
     text_words = text.split()
-    
+
     synonyms = {
         "analyst": ["analytics", "analysis", "research"],
         "data": ["dataset", "analytics"],
     }
-    
+
     title_matches = 0
-    
+    matches = 0      # <-- ADD THIS
+
     for word in query_words:
-    
+
         if word in title:
             title_matches += 1
             continue
-    
+
+        if word in text_words:
+            matches += 1
+            continue
+
         if word in synonyms:
             if any(s in text_words for s in synonyms[word]):
                 matches += 1
-    
+
     if title_matches == len(query_words):
         return 100
 
     elif matches == len(query_words):
         return 80
-    
+
     elif title_matches > 0:
         return 60
+
     elif matches > 0:
         return 30
-    
+
     return 0
 
 def heuristic_score(job: Dict) -> Dict:
