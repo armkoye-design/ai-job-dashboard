@@ -2088,7 +2088,7 @@ if search_clicked:
         
         if not df.empty and "Query_Match" in df.columns:
             
-            df = df[df["Query_Match"] >= 80]
+            df = df[df["Query_Match"] >= 60]
             
         
         
