@@ -202,7 +202,7 @@ GENERIC_TITLE_SKIP = {
 }
 
 ENGLISHJOBS_SITES = [
-    {"country": "Germany", "base": "https://englishjobs.de", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship", "/in/berlin", "/in/hamburg", "/in/frankfurt", "/in/munich", "/in/dusseldorf", "/in/cologne", "/in/frankfurt-am-main", "/in/cologne", "/in/bonn", "/in/berlin-Brandenburg"]},
+    {"country": "Germany", "base": "https://englishjobs.de", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship", "/in/berlin", "/in/hamburg", "/in/frankfurt", "/in/munich", "/in/dusseldorf", "/in/cologne", "/in/stuttgart"]},
     {"country": "France", "base": "https://englishjobs.fr", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
     {"country": "Spain", "base": "https://englishjobs.es", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
     {"country": "Italy", "base": "https://englishjobs.it", "seeds": ["/", "/jobs/english", "/jobs/visa_sponsorship"]},
@@ -293,7 +293,7 @@ def infer_country_from_location(location_text: str, fallback_country: str = "") 
         "toronto": "Canada", "vancouver": "Canada", "montreal": "Canada", "calgary": "Canada", "ottawa": "Canada",
         "london": "United Kingdom", "manchester": "United Kingdom", "birmingham": "United Kingdom", "edinburgh": "United Kingdom", "glasgow": "United Kingdom",
         "dublin": "Ireland", "cork": "Ireland", "galway": "Ireland",
-        "new york": "United States", "san francisco": "United States", "boston": "United States", "chicago": "United States", "seattle": "United States", "austin": "United States", "washington dc": "United States",
+        "new york": "United States", "san francisco": "United States", "boston": "United States", "chicago": "United States", "seattle": "United States", "austin": "United States", "washington dc": "United States", "washington": "United States",
         "berlin": "Germany", "munich": "Germany", "münchen": "Germany", "hamburg": "Germany", "frankfurt": "Germany", "cologne": "Germany", "köln": "Germany", "düsseldorf": "Germany", "stuttgart": "Germany",
         "amsterdam": "Netherlands", "rotterdam": "Netherlands", "utrecht": "Netherlands", "eindhoven": "Netherlands", "the hague": "Netherlands", "den haag": "Netherlands",
         "paris": "France", "lyon": "France", "marseille": "France", "toulouse": "France", "nantes": "France",
@@ -690,7 +690,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             
                     full_text = clean_text(
                         detail_soup.get_text(" ", strip=True)
-                    )[:5000]
+                    )[:15000]
 
             
             except Exception:
@@ -800,7 +800,7 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
                 "title": title,
                 "company": "",
                 "location": country,
-                "description": full_text if full_text else context[:5000],
+                "description": context[:15000],
                 "url": href,
                 "tags": [],
             })
@@ -863,19 +863,15 @@ def fetch_relocate_me() -> List[Dict]:
         seen_urls.add(href)
 
         inferred_country = "Europe"
-        for c in ["Germany", "Netherlands", "United Kingdom", "Portugal", "Spain", "France", "Belgium", "Sweden", "Denmark", "Finland", "Ireland", "Cyprus", "Austria", "Switzerland", "Poland", "Italy", "United States", "Australia", "New Zealand"]:
+        for c in ["Germany", "Netherlands", "United Kingdom", "Portugal", "Spain", "France", "Belgium", "Sweden", "Denmark", "Finland", "Ireland", "Cyprus", "Austria", "Switzerland", "Poland", "Italy", "Norway", "Canada",
+    "United States",
+    "Australia",
+    "New Zealand",]:
             if c.lower() in combined:
                 inferred_country = c
                 break
                 
-        full_text = ""
-        try:
-            detail_resp = SESSION.get(href, timeout=20, allow_redirects=True)
-            if detail_resp.status_code < 400:
-                detail_soup = BeautifulSoup(detail_resp.text, "html.parser")
-                full_text = clean_text(detail_soup.get_text(" ", strip=True))[:5000]
-        except:
-            pass
+        
 
         found.append(normalize_job({
             "source": "Relocate.me",
@@ -2085,14 +2081,14 @@ if search_clicked:
 
         if "Visa_Likelihood" in df.columns:
             
-            df = df[df["Visa_Likelihood"] >= 10]
+            df = df[df["Visa_Likelihood"] > 0]
         else:
             st.warning("No jobs found.")
             st.stop()
         
         if not df.empty and "Query_Match" in df.columns:
             
-            df = df[df["Query_Match"] >= 30]
+            df = df[df["Query_Match"] >= 80]
             
         
         
