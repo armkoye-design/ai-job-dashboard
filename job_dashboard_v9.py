@@ -378,7 +378,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     for word in query_words:
 
-        if word in title:
+        if word in title_words:
             title_matches += 1
             continue
 
@@ -397,7 +397,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
         return 80
 
     elif title_matches >= 2:
-    return 60
+        return 60
 
     elif matches >= 2:
         return 40
