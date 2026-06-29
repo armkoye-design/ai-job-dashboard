@@ -356,6 +356,16 @@ def query_match_score(job: Dict, search_query: str) -> int:
     query = re.sub(r"\s+", " ", query).strip()
 
     query_words = [w for w in query.split() if len(w) > 2]
+    if len(query_words) >= 2:
+
+        matched_words = 0
+
+        for word in query_words:
+            if word in text:
+                matched_words += 1
+
+        if matched_words < 2:
+            return 0
     text_words = text.split()
 
     synonyms = {
@@ -386,13 +396,17 @@ def query_match_score(job: Dict, search_query: str) -> int:
     elif matches == len(query_words):
         return 80
 
-    elif title_matches > 0:
-        return 60
+    elif title_matches >= 2:
+    return 60
 
-    elif matches > 0:
-        return 30
+    elif matches >= 2:
+        return 40
 
-    return 0
+    elif title_matches == 1:
+        return 10
+
+    elif matches == 1:
+        return 5
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
@@ -601,17 +615,6 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             title = clean_text(a.get_text(" ", strip=True))
             href = urljoin(base, a["href"])
             href_l = href.lower()
-
-            
-
-            for token in [
-                "/canton-",
-                "/region-",
-                "/city-",
-                "/visa_sponsorship",
-            ]:
-                if token in href_l:
-                    st.error(f"MATCHED TOKEN: {token}")
 
            
 
