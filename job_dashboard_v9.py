@@ -360,11 +360,11 @@ def query_match_score(job: Dict, search_query: str) -> int:
     if not query_words:
         return 0
 
-    title_words = title.split()
-    text_words = text.split()
+    title_words = set(title.split())
+    text_words = set(text.split())
 
     synonyms = {
-        "analyst": ["analytics", "analysis", "research"],
+        "analyst": ["analytics", "analysis"],
         "data": ["dataset", "analytics"],
         "developer": ["engineer", "programmer"],
         "manager": ["lead", "head"],
