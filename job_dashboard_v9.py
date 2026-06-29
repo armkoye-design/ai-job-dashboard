@@ -355,6 +355,17 @@ def query_match_score(job: Dict, search_query: str) -> int:
     text = re.sub(r"\s+", " ", text).strip()
     query = re.sub(r"\s+", " ", query).strip()
 
+    # ---------------------------------------
+    # Exact phrase matching
+    # ---------------------------------------
+    if query in title:
+        return 100
+
+    if query in text:
+        return 90
+
+    # ---------------------------------------
+
     query_words = [w for w in query.split() if len(w) > 2]
 
     if not query_words:
