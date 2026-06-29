@@ -340,7 +340,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title = str(job.get("title", "")).lower()
 
     text = (
-        str(job.get("title", "")) + " " +
+        title + " " +
         str(job.get("description", ""))[:3000]
     ).lower()
 
@@ -356,57 +356,66 @@ def query_match_score(job: Dict, search_query: str) -> int:
     query = re.sub(r"\s+", " ", query).strip()
 
     query_words = [w for w in query.split() if len(w) > 2]
-    if len(query_words) >= 2:
 
-        matched_words = 0
+    if not query_words:
+        return 0
 
-        for word in query_words:
-            if word in text:
-                matched_words += 1
-
-        if matched_words < 2:
-            return 0
+    title_words = title.split()
     text_words = text.split()
 
     synonyms = {
         "analyst": ["analytics", "analysis", "research"],
         "data": ["dataset", "analytics"],
+        "developer": ["engineer", "programmer"],
+        "manager": ["lead", "head"],
     }
 
     title_matches = 0
-    matches = 0      # <-- ADD THIS
+    text_matches = 0
 
     for word in query_words:
 
+        # Match in title
         if word in title_words:
             title_matches += 1
-            continue
 
+        # Match in description
         if word in text_words:
-            matches += 1
+            text_matches += 1
             continue
 
+        # Synonym match
         if word in synonyms:
             if any(s in text_words for s in synonyms[word]):
-                matches += 1
+                text_matches += 1
 
+    # ---------- Scoring ----------
+
+    # Every keyword appears in the title
     if title_matches == len(query_words):
         return 100
 
-    elif matches == len(query_words):
+    # Every keyword appears somewhere in title/description
+    if text_matches == len(query_words):
         return 80
 
-    elif title_matches >= 2:
+    # Most keywords in title
+    if title_matches >= max(1, len(query_words) - 1):
         return 60
 
-    elif matches >= 2:
+    # Most keywords in description
+    if text_matches >= max(1, len(query_words) - 1):
         return 40
 
-    elif title_matches == 1:
+    # One keyword in title
+    if title_matches > 0:
+        return 20
+
+    # One keyword in description
+    if text_matches > 0:
         return 10
 
-    elif matches == 1:
-        return 5
+    return 0
 
 def heuristic_score(job: Dict) -> Dict:
     text = " ".join([
