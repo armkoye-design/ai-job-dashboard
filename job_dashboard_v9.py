@@ -431,11 +431,11 @@ def query_match_score(job: Dict, search_query: str) -> int:
         return 10
 
     st.write(
-        title,
-        "| title_matches =", title_matches,
-        "| text_matches =", text_matches,
-        "| score = 0"
-    )   
+    f"TITLE: {title}",
+    f"title_matches={title_matches}",
+    f"text_matches={text_matches}",
+    f"score=0"
+    ) 
 
     return 0
 
