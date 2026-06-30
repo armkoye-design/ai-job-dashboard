@@ -404,27 +404,38 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     # Every keyword appears in the title
     if title_matches == len(query_words):
+        st.write(title, "->100")
         return 100
 
     # Every keyword appears somewhere in title/description
     if text_matches == len(query_words):
+        st.write(title, "->80")
         return 80
 
     # Most keywords in title
     if title_matches >= max(1, len(query_words) - 1):
+        st.write(title, "->60")
         return 60
 
     # Most keywords in description
     if text_matches >= max(1, len(query_words) - 1):
+        st.write(title, "->40")
         return 40
 
     # One keyword in title
-    if title_matches > 0:
+    if title_matches > 20:
         return 20
 
     # One keyword in description
     if text_matches > 0:
         return 10
+
+    st.write(
+        title,
+        "| title_matches =", title_matches,
+        "| matches =", matches,
+        "| score = 0"
+    )   
 
     return 0
 
