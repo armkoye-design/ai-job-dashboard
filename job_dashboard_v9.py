@@ -423,7 +423,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
         return 40
 
     # One keyword in title
-    if title_matches > 20:
+    if title_matches > 0:
         return 20
 
     # One keyword in description
@@ -433,7 +433,7 @@ def query_match_score(job: Dict, search_query: str) -> int:
     st.write(
         title,
         "| title_matches =", title_matches,
-        "| matches =", matches,
+        "| text_matches =", text_matches,
         "| score = 0"
     )   
 
@@ -1934,30 +1934,6 @@ if search_clicked:
             progress.progress(min(idx / total, 1.0))
         
             score = query_match_score(job, query)
-
-            # NEW QUERY MATCH LOGIC
-            query_words = query.lower().split()
-        
-            title_text = (
-                str(job.get("title", "")) + " " +
-                str(job.get("description", ""))[:3000]
-            ).lower()
-        
-            matches = 0
-        
-            for word in query_words:
-                if word in title_text:
-                    matches += 1
-        
-            if matches == len(query_words):
-                score = 90
-        
-            elif matches > 0:
-                score = 60
-        
-            else:
-                score = 0
-
 
             
             ai = heuristic_score(job)
