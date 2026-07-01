@@ -618,9 +618,6 @@ def fetch_serpapi_jobs(query: str, country: str, api_key: str) -> List[Dict]:
 def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> List[Dict]:
     found = []
     seen_urls = set()
-    links_seen = 0
-    candidate_pass = 0
-    title_pass = 0
     for path in seeds:
         url = urljoin(base, path)
        
@@ -634,20 +631,18 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
 
         soup = BeautifulSoup(html, "html.parser")
 
-        links = soup.find_all("a", href=True)
+        for card in soup.select("div.job.js-job"):
+            title_el = card.select_one('a.js-joblink > h3[itemprop="title"]')
+            if not title_el:
+                continue
 
-        
+            a = title_el.parent
+            if not a or a.name != "a" or "js-joblink" not in a.get("class", []):
+                continue
 
-        
-        for a in soup.find_all("a", href=True):
-
-            links_seen += 1
-            
-            title = clean_text(a.get_text(" ", strip=True))
+            title = clean_text(title_el.get_text(" ", strip=True))
             href = urljoin(base, a["href"])
             href_l = href.lower()
-
-           
 
             bad_domains = [
                 "wikipedia.org",
@@ -668,45 +663,11 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             ]):
                 continue
             
-            #if "/in/" in href_l and "/english" in href_l:
-             #   st.error("FILTER 2")
-               # continue
-               
-                
-
-            # Skip category/search pages
-            #if "/visa_sponsorship" in href_l:
-            #    continue
-            
-            #if "/canton-" in href_l:
-            #    continue
-            
-            #if "/city-" in href_l:
-            #    continue
-            
-            #if "/region-" in href_l:
-            #    continue
-            
-           # if href.endswith(".txt"):
-           #     continue
-           # TEMP DEBUG    
-           # if not any(x in href_l for x in ["/job", "/jobs/", "/in/"]):
-           #    continue
-
-            context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
-            combined = f"{title} {context}".lower()
-            #if not is_candidate_text(combined):
-             #   continue
-            candidate_pass += 1
-                
-           
-            
             if href in seen_urls:
                 continue
             seen_urls.add(href)
 
             full_text = ""
-            context = clean_text(a.parent.get_text(" ", strip=True)) if a.parent else ""
             
             try:
                 detail_resp = SESSION.get(
@@ -730,121 +691,18 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             except Exception:
                 pass
             
-            title_l = title.lower()
-
-            bad_terms = [
-                "blog",
-                "stories",
-                "story",
-                "visa",
-                "immigration",
-                "salary",
-                "salaries",
-                "cost of living",
-                "working abroad",
-                "relocation companies",
-                "read our blog",
-                "expat",
-                "money & taxes",
-                "about",
-                "contact",
-                "newsletter",
-                "english jobs germany",
-                "english jobs",
-            ]
-            
-            good_job_terms = [
-                "job",
-                "jobs",
-                "analyst",
-                "developer",
-                "engineer",
-                "manager",
-                "specialist",
-                "consultant",
-                "officer",
-                "coordinator",
-                "director",
-                "lead",
-                "head",
-                "scientist",
-                "administrator",
-                "architect",
-                "researcher",
-                "internship",
-                "intern",
-                "product manager",
-                "data",
-                "database",
-                "business analyst",
-            ]
-
-            #st.write("TITLE =", title)
-            #st.write("HREF =", href)
-            
-            #if any(term in title_l for term in bad_terms):
-             #   continue
-            
-            #if not any(term in title_l for term in good_job_terms):
-             #  continue
-            title_pass += 1
-                
-            #st.write("ADDING:", title)
-
-            bad_url_parts = [
-                "/visa_sponsorship",
-                "/canton-",
-                "/city-",
-                "/region-",
-                "/jobs-in-",
-            ]
-            
-            #if any(x in href_l for x in bad_url_parts):
-            #    continue
-
-            href_l = href.lower()
-            title_l = title.lower()
-            
-            bad_domains = [
-                "wikipedia.org",
-            ]
-            
-            bad_words = [
-                "wikipedia",
-                "city",
-                "country",
-                "visa",
-                "salary",
-                "cost of living",
-                "immigration",
-            ]
-            
-            #if any(x in href_l for x in bad_domains):
-             #   continue
-            
-            #if any(x in title_l for x in bad_words):
-            #    continue
-            #if len(title.split()) <= 1:
-             #   continue
-           
-            
             job_item = normalize_job({
                 "source": "EnglishJobs",
                 "country": country,
                 "title": title,
                 "company": "",
                 "location": country,
-                "description": context[:15000],
+                "description": full_text,
                 "url": href,
                 "tags": [],
             })
             
-           
-            
             found.append(job_item)
-
-           
-           
 
     return found
    
