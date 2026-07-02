@@ -341,12 +341,44 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title = str(job.get("title", ""))
     description = str(job.get("description", ""))
 
+    # Normalize text so matching is consistent across punctuation, casing, and spacing.
     def normalize_text(text: str) -> str:
         text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
         return re.sub(r"\s+", " ", text).strip()
 
+    # Split text into meaningful tokens for word-based matching.
     def tokenize(text: str) -> List[str]:
         return [token for token in normalize_text(text).split() if len(token) > 1]
+
+    # Expand the query with a generic role-family synonym system.
+    # This is intentionally broad so it can work for many professions.
+    def expand_query_terms(tokens: List[str]) -> set:
+        expanded = set(tokens)
+        synonym_map = {
+            "analyst": ["analysis", "analytics"],
+            "analytics": ["analysis", "analyst"],
+            "manager": ["management", "lead", "leadership", "supervisor"],
+            "developer": ["development", "engineering", "software", "programming"],
+            "engineer": ["engineering", "development", "developer", "programming"],
+            "specialist": ["expert", "focused"],
+            "officer": ["administrator", "coordinator", "lead"],
+            "coordinator": ["coordination", "program"],
+            "administrator": ["admin", "management", "officer"],
+            "scientist": ["science", "research"],
+            "db": ["database"],
+            "dba": ["database", "administrator"],
+            "sql": ["database", "query"],
+            "gis": ["geospatial", "spatial", "mapping"],
+            "bi": ["business intelligence", "analytics"],
+            "ml": ["machine learning", "ai"],
+            "pm": ["project", "programme"],
+            "pmo": ["project", "programme"],
+            "python": ["backend", "software", "programming", "code", "data"],
+            "data": ["analytics", "database", "intelligence", "science"],
+        }
+        for token in tokens:
+            expanded.update(synonym_map.get(token, []))
+        return expanded
 
     title_text = normalize_text(title)
     description_text = normalize_text(description)
@@ -356,9 +388,11 @@ def query_match_score(job: Dict, search_query: str) -> int:
     if not full_text or not query:
         return 0
 
+    # Exact phrase matches in the title get the highest score.
     if query in title_text:
         return 100
 
+    # Exact phrase matches anywhere in the record also score highly.
     if query in full_text:
         return 90
 
@@ -369,34 +403,11 @@ def query_match_score(job: Dict, search_query: str) -> int:
     if not query_tokens:
         return 0
 
-    synonym_map = {
-        "analyst": ["analysis", "analytics", "analytic"],
-        "manager": ["management", "lead", "leadership", "supervisor"],
-        "developer": ["development", "engineering", "programming", "software"],
-        "engineer": ["engineering", "development", "developer", "programming"],
-        "specialist": ["expert", "focused"],
-        "officer": ["administrator", "coordinator", "lead"],
-        "coordinator": ["coordination", "program"],
-        "administrator": ["admin", "management"],
-        "scientist": ["science", "research"],
-        "db": ["database"],
-        "dba": ["database", "administrator"],
-        "sql": ["database", "query"],
-        "gis": ["geospatial", "spatial", "mapping"],
-        "bi": ["business intelligence", "analytics"],
-        "ml": ["machine learning", "ai"],
-        "pm": ["project", "programme"],
-        "pmo": ["project", "programme"],
-        "python": ["backend", "software", "programming", "code", "data"],
-    }
-
-    expanded_query_terms = set(query_tokens)
-    for token in query_tokens:
-        expanded_query_terms.update(synonym_map.get(token, []))
-
+    expanded_query_terms = expand_query_terms(query_tokens)
     title_word_set = set(title_tokens)
     description_word_set = set(description_tokens)
 
+    # Count direct and expanded matches separately so title matches are rewarded more.
     title_direct_matches = sum(1 for token in query_tokens if token in title_word_set)
     title_family_matches = sum(1 for term in expanded_query_terms if term in title_word_set)
     description_direct_matches = sum(1 for token in query_tokens if token in description_word_set)
@@ -405,14 +416,17 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title_strength = (title_direct_matches * 4) + title_family_matches
     description_strength = (description_direct_matches * 2) + description_family_matches
 
+    # Penalize clearly unrelated professions even when generic words overlap.
     unrelated_terms = {
         "sales", "marketing", "finance", "financial", "accounting", "hr",
         "human", "resources", "legal", "medical", "construction", "automotive",
         "retail", "hospitality", "manufacturing", "customer", "service",
+        "teacher", "nurse", "receptionist", "driver", "mechanic",
     }
     unrelated_title_hit = bool(title_word_set & unrelated_terms)
     unrelated_description_hit = bool(description_word_set & unrelated_terms)
 
+    # Strong title-based matches score very highly.
     if title_direct_matches == len(query_tokens) and title_strength >= len(query_tokens) * 4:
         return 100
 
@@ -425,15 +439,18 @@ def query_match_score(job: Dict, search_query: str) -> int:
     if title_strength >= max(3, len(query_tokens)) and (description_strength >= 2 or title_direct_matches >= 1):
         return 60
 
+    # Title-only matches still get a meaningful score.
     if title_direct_matches > 0:
         return 40
 
-    if description_strength >= 3:
+    # Description-only matches are weaker.
+    if description_strength >= 3 and not (unrelated_title_hit or unrelated_description_hit):
         return 25
 
     if description_direct_matches > 0 or description_family_matches > 0:
         return 15
 
+    # Return zero for clearly unrelated professions.
     if (unrelated_title_hit or unrelated_description_hit) and title_direct_matches <= 1 and description_strength <= 2:
         return 0
 
