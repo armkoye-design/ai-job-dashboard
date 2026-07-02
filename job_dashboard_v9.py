@@ -632,9 +632,59 @@ def fetch_serpapi_jobs(query: str, country: str, api_key: str) -> List[Dict]:
     return results
 
 
-def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> List[Dict]:
+def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str], query: str = "") -> List[Dict]:
     found = []
     seen_urls = set()
+
+    def normalize_text(text: str) -> str:
+        text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
+        return re.sub(r"\s+", " ", text).strip()
+
+    def tokenize(text: str) -> List[str]:
+        return [token for token in normalize_text(text).split() if len(token) > 1]
+
+    def should_fetch_detail_page(title: str) -> bool:
+        if not query:
+            return True
+
+        title_text = normalize_text(title)
+        query_text = normalize_text(query)
+        if not title_text or not query_text:
+            return True
+
+        query_tokens = tokenize(query_text)
+        title_tokens = tokenize(title_text)
+        if not query_tokens:
+            return True
+
+        if any(token in title_tokens for token in query_tokens):
+            return True
+
+        synonym_map = {
+            "analyst": ["analysis", "analytics"],
+            "manager": ["management", "lead"],
+            "developer": ["development", "engineering", "software"],
+            "engineer": ["engineering", "developer"],
+            "specialist": ["expert"],
+            "officer": ["administrator", "coordinator"],
+            "coordinator": ["coordination", "program"],
+            "administrator": ["admin"],
+            "scientist": ["science", "research"],
+            "db": ["database"],
+            "dba": ["database", "administrator"],
+            "sql": ["database"],
+            "gis": ["geospatial", "spatial", "mapping"],
+            "bi": ["analytics", "intelligence"],
+            "ml": ["machine learning", "ai"],
+            "python": ["backend", "software", "code"],
+        }
+
+        expanded_terms = set(query_tokens)
+        for token in query_tokens:
+            expanded_terms.update(synonym_map.get(token, []))
+
+        return any(term in title_tokens for term in expanded_terms)
+
     for path in seeds:
         url = urljoin(base, path)
        
@@ -685,28 +735,31 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str]) -> Lis
             seen_urls.add(href)
 
             full_text = ""
-            
-            try:
-                detail_resp = SESSION.get(
-                    href,
-                    timeout=20,
-                    allow_redirects=True,
-                )
-            
-                if detail_resp.status_code < 400:
-            
-                    detail_soup = BeautifulSoup(
-                        detail_resp.text,
-                        "html.parser"
-                    )
-            
-                    full_text = clean_text(
-                        detail_soup.get_text(" ", strip=True)
-                    )[:15000]
+            fetch_detail_page = should_fetch_detail_page(title)
 
-            
-            except Exception:
-                pass
+            if fetch_detail_page:
+                try:
+                    detail_resp = SESSION.get(
+                        href,
+                        timeout=20,
+                        allow_redirects=True,
+                    )
+
+                    if detail_resp.status_code < 400:
+
+                        detail_soup = BeautifulSoup(
+                            detail_resp.text,
+                            "html.parser"
+                        )
+
+                        full_text = clean_text(
+                            detail_soup.get_text(" ", strip=True)
+                        )[:15000]
+
+                except Exception:
+                    pass
+            else:
+                full_text = title
             
             job_item = normalize_job({
                 "source": "EnglishJobs",
@@ -1439,7 +1492,7 @@ if search_clicked:
                 if site["country"] not in countries:
                     continue
               
-                jobs = scrape_html_jobs_from_site(site["country"], site["base"], site["seeds"])
+                jobs = scrape_html_jobs_from_site(site["country"], site["base"], site["seeds"], query)
                 for job in jobs:
                     key = (job.get("source"), job.get("title"), job.get("company"), job.get("location"), job.get("url"))
                     if key in seen_keys:
