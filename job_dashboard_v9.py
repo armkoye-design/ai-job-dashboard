@@ -336,231 +336,105 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     return False
 
 
-JOB_FAMILIES = [
-    {
-        "name": "data analysis",
-        "aliases": [
-            "data analyst",
-            "business analyst",
-            "analytics engineer",
-            "bi developer",
-            "business intelligence",
-            "reporting analyst",
-            "data scientist",
-            "machine learning",
-            "ml engineer",
-        ],
-        "core_tokens": [
-            "data", "analyst", "analytics", "analysis", "bi", "reporting",
-            "scientist", "insight", "intelligence",
-        ],
-        "support_tokens": [
-            "business", "engineer", "developer", "machine", "learning", "ml",
-        ],
-    },
-    {
-        "name": "gis",
-        "aliases": [
-            "gis analyst",
-            "gis specialist",
-            "gis officer",
-            "geospatial engineer",
-            "remote sensing",
-            "spatial analyst",
-            "cartographer",
-        ],
-        "core_tokens": [
-            "gis", "geospatial", "spatial", "cartography", "mapping",
-        ],
-        "support_tokens": [
-            "remote", "sensing", "survey",
-        ],
-    },
-    {
-        "name": "project management",
-        "aliases": [
-            "project manager",
-            "programme manager",
-            "project coordinator",
-            "project officer",
-            "pmo officer",
-        ],
-        "core_tokens": [
-            "project", "programme", "program", "pmo",
-        ],
-        "support_tokens": [
-            "manager", "coordinator", "officer", "delivery", "portfolio",
-        ],
-    },
-    {
-        "name": "database",
-        "aliases": [
-            "database administrator",
-            "sql developer",
-            "database engineer",
-            "dba",
-        ],
-        "core_tokens": [
-            "database", "sql", "dba",
-        ],
-        "support_tokens": [
-            "administrator", "admin", "engineer", "developer",
-        ],
-    },
-    {
-        "name": "python",
-        "aliases": [
-            "python developer",
-            "backend developer",
-            "software engineer",
-            "data engineer",
-            "machine learning engineer",
-        ],
-        "core_tokens": [
-            "python",
-        ],
-        "support_tokens": [
-            "backend", "software", "engineer", "developer", "data",
-            "machine", "learning", "ml",
-        ],
-    },
-]
-
-UNRELATED_DOMAIN_TERMS = {
-    "sales", "marketing", "finance", "financial", "accounting", "hr",
-    "human", "resources", "legal", "medical", "construction", "automotive",
-    "retail", "hospitality", "manufacturing", "customer", "service",
-}
-
-
-def _normalize_text(text: str) -> str:
-    text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
-    return re.sub(r"\s+", " ", text).strip()
-
-
-def _tokenize(text: str) -> List[str]:
-    return [token for token in _normalize_text(text).split() if len(token) > 1]
-
-
-def _count_overlap(tokens: List[str], family_tokens: List[str]) -> int:
-    token_set = set(tokens)
-    family_set = set(family_tokens)
-    return sum(1 for token in token_set if token in family_set)
-
-
 def query_match_score(job: Dict, search_query: str) -> int:
 
     title = str(job.get("title", ""))
     description = str(job.get("description", ""))
 
-    title_text = _normalize_text(title)
-    description_text = _normalize_text(description)
-    text = f"{title_text} {description_text[:3000]}"
-    query = _normalize_text(search_query)
+    def normalize_text(text: str) -> str:
+        text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
+        return re.sub(r"\s+", " ", text).strip()
 
-    if not text or not query:
+    def tokenize(text: str) -> List[str]:
+        return [token for token in normalize_text(text).split() if len(token) > 1]
+
+    title_text = normalize_text(title)
+    description_text = normalize_text(description)
+    full_text = f"{title_text} {description_text[:3000]}"
+    query = normalize_text(search_query)
+
+    if not full_text or not query:
         return 0
 
     if query in title_text:
         return 100
 
-    if query in text:
+    if query in full_text:
         return 90
 
-    query_tokens = _tokenize(query)
-    title_tokens = _tokenize(title_text)
-    text_tokens = _tokenize(text)
+    query_tokens = tokenize(query)
+    title_tokens = tokenize(title_text)
+    description_tokens = tokenize(description_text)
 
     if not query_tokens:
         return 0
 
-    title_matches = 0
-    text_matches = 0
+    synonym_map = {
+        "analyst": ["analysis", "analytics", "analytic"],
+        "manager": ["management", "lead", "leadership", "supervisor"],
+        "developer": ["development", "engineering", "programming", "software"],
+        "engineer": ["engineering", "development", "developer", "programming"],
+        "specialist": ["expert", "focused"],
+        "officer": ["administrator", "coordinator", "lead"],
+        "coordinator": ["coordination", "program"],
+        "administrator": ["admin", "management"],
+        "scientist": ["science", "research"],
+        "db": ["database"],
+        "dba": ["database", "administrator"],
+        "sql": ["database", "query"],
+        "gis": ["geospatial", "spatial", "mapping"],
+        "bi": ["business intelligence", "analytics"],
+        "ml": ["machine learning", "ai"],
+        "pm": ["project", "programme"],
+        "pmo": ["project", "programme"],
+        "python": ["backend", "software", "programming", "code", "data"],
+    }
 
+    expanded_query_terms = set(query_tokens)
     for token in query_tokens:
-        if token in title_tokens:
-            title_matches += 1
-        if token in text_tokens:
-            text_matches += 1
+        expanded_query_terms.update(synonym_map.get(token, []))
 
-    family_matches = []
+    title_word_set = set(title_tokens)
+    description_word_set = set(description_tokens)
 
-    for family in JOB_FAMILIES:
-        family_aliases = family.get("aliases", [])
-        core_tokens = family.get("core_tokens", [])
-        support_tokens = family.get("support_tokens", [])
+    title_direct_matches = sum(1 for token in query_tokens if token in title_word_set)
+    title_family_matches = sum(1 for term in expanded_query_terms if term in title_word_set)
+    description_direct_matches = sum(1 for token in query_tokens if token in description_word_set)
+    description_family_matches = sum(1 for term in expanded_query_terms if term in description_word_set)
 
-        query_core_overlap = sum(1 for token in query_tokens if token in core_tokens)
-        query_support_overlap = sum(1 for token in query_tokens if token in support_tokens)
-        alias_query_hit = any(alias in query for alias in family_aliases)
+    title_strength = (title_direct_matches * 4) + title_family_matches
+    description_strength = (description_direct_matches * 2) + description_family_matches
 
-        if query_core_overlap == 0 and query_support_overlap == 0 and not alias_query_hit:
-            continue
+    unrelated_terms = {
+        "sales", "marketing", "finance", "financial", "accounting", "hr",
+        "human", "resources", "legal", "medical", "construction", "automotive",
+        "retail", "hospitality", "manufacturing", "customer", "service",
+    }
+    unrelated_title_hit = bool(title_word_set & unrelated_terms)
+    unrelated_description_hit = bool(description_word_set & unrelated_terms)
 
-        title_core_overlap = sum(1 for token in title_tokens if token in core_tokens)
-        title_support_overlap = sum(1 for token in title_tokens if token in support_tokens)
-        text_core_overlap = sum(1 for token in text_tokens if token in core_tokens)
-        text_support_overlap = sum(1 for token in text_tokens if token in support_tokens)
-        alias_title_hit = any(alias in title_text for alias in family_aliases)
-        alias_text_hit = any(alias in text for alias in family_aliases)
-
-        if title_core_overlap == 0 and title_support_overlap == 0 and text_core_overlap == 0 and text_support_overlap == 0 and not alias_title_hit and not alias_text_hit:
-            continue
-
-        strength = (query_core_overlap * 3) + query_support_overlap + (2 if alias_query_hit else 0)
-        family_matches.append((
-            family,
-            strength,
-            title_core_overlap,
-            title_support_overlap,
-            text_core_overlap,
-            text_support_overlap,
-            alias_title_hit or alias_text_hit,
-        ))
-
-    if family_matches:
-        best_family = max(family_matches, key=lambda item: (
-            item[1],
-            item[2] + item[3],
-            item[4] + item[5],
-            1 if item[6] else 0,
-        ))
-        _, strength, title_core_overlap, title_support_overlap, text_core_overlap, text_support_overlap, alias_hit = best_family
-
-        if strength >= 6 and (title_core_overlap >= 2 or title_support_overlap >= 2 or (title_core_overlap >= 1 and text_core_overlap >= 1) or alias_hit):
-            return 80
-
-        if strength >= 4 and (title_core_overlap >= 1 or text_core_overlap >= 2 or title_support_overlap >= 2 or alias_hit):
-            return 60
-
-        if strength >= 3 and (text_core_overlap >= 2 or title_core_overlap >= 1 or text_support_overlap >= 2):
-            return 50
-
-        if strength >= 2 and (title_core_overlap >= 1 or title_support_overlap >= 1):
-            return 40
-
-    if title_matches == len(query_tokens):
+    if title_direct_matches == len(query_tokens) and title_strength >= len(query_tokens) * 4:
         return 100
 
-    if text_matches == len(query_tokens):
-        return 80
+    if title_strength >= max(6, len(query_tokens) * 3) and title_direct_matches >= max(1, len(query_tokens) - 1):
+        return 85
 
-    if title_matches >= max(1, len(query_tokens) - 1):
+    if title_strength >= max(4, len(query_tokens) * 2) and title_direct_matches >= 1:
+        return 75
+
+    if title_strength >= max(3, len(query_tokens)) and (description_strength >= 2 or title_direct_matches >= 1):
         return 60
 
-    if text_matches >= max(1, len(query_tokens) - 1):
+    if title_direct_matches > 0:
         return 40
 
-    if title_matches > 0:
-        return 20
+    if description_strength >= 3:
+        return 25
 
-    if text_matches > 0:
-        return 10
+    if description_direct_matches > 0 or description_family_matches > 0:
+        return 15
 
-    if title_tokens and any(term in title_tokens for term in UNRELATED_DOMAIN_TERMS):
-        return 0
-
-    if text_tokens and any(term in text_tokens for term in UNRELATED_DOMAIN_TERMS):
+    if (unrelated_title_hit or unrelated_description_hit) and title_direct_matches <= 1 and description_strength <= 2:
         return 0
 
     return 0
