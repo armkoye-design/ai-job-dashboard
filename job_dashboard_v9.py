@@ -336,6 +336,75 @@ def country_matches_selected(job_country: str, selected_countries: List[str]) ->
     return False
 
 
+def is_title_candidate(job: Dict, search_query: str) -> bool:
+    title = str(job.get("title", ""))
+    if not title or not search_query:
+        return False
+
+    def normalize_text(text: str) -> str:
+        text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
+        return re.sub(r"\s+", " ", text).strip()
+
+    def tokenize(text: str) -> List[str]:
+        return [token for token in normalize_text(text).split() if len(token) > 1]
+
+    def expand_query_terms(tokens: List[str]) -> set:
+        expanded = set(tokens)
+        synonym_map = {
+            "analyst": ["analysis", "analytics", "analytic", "intelligence", "reporting"],
+            "analytics": ["analysis", "analyst", "reporting", "intelligence"],
+            "analysis": ["analytics", "analyst", "reporting", "intelligence"],
+            "manager": ["management", "lead", "leadership", "supervisor", "head"],
+            "developer": ["development", "engineering", "software", "programming", "build"],
+            "engineer": ["engineering", "development", "developer", "programming", "build"],
+            "specialist": ["expert", "focused", "consultant", "advisor"],
+            "officer": ["administrator", "coordinator", "lead", "support"],
+            "coordinator": ["coordination", "program", "project", "support"],
+            "administrator": ["admin", "management", "officer", "support"],
+            "scientist": ["science", "research", "analytics", "data"],
+            "data": ["analytics", "database", "intelligence", "science", "information"],
+            "business": ["business", "intelligence", "ops", "operations"],
+            "intelligence": ["business", "analytics", "analysis", "insight"],
+            "reporting": ["report", "analytics", "analysis", "data"],
+            "assistant": ["assistant", "support", "coordinator", "administrator"],
+        }
+        for token in tokens:
+            expanded.update(synonym_map.get(token, []))
+        return expanded
+
+    title_text = normalize_text(title)
+    query_text = normalize_text(search_query)
+    if not title_text or not query_text:
+        return False
+
+    query_tokens = tokenize(query_text)
+    title_tokens = tokenize(title_text)
+    if not query_tokens or not title_tokens:
+        return False
+
+    title_word_set = set(title_tokens)
+    expanded_query_terms = expand_query_terms(query_tokens)
+
+    if title_word_set & set(query_tokens):
+        return True
+
+    if title_word_set & expanded_query_terms:
+        return True
+
+    role_tokens = {
+        "analyst", "analysis", "analytics", "manager", "management", "developer",
+        "development", "engineer", "engineering", "specialist", "expert",
+        "assistant", "officer", "administrator", "coordinator", "scientist",
+        "research", "consultant", "advisor", "technician", "programmer",
+        "architect", "designer", "researcher",
+    }
+
+    query_role_tokens = {token for token in query_tokens if token in role_tokens}
+    title_role_tokens = {token for token in title_tokens if token in role_tokens}
+
+    return bool(query_role_tokens and title_role_tokens and (query_role_tokens & title_role_tokens))
+
+
 def query_match_score(job: Dict, search_query: str) -> int:
 
     title = str(job.get("title", ""))
@@ -1957,7 +2026,10 @@ if search_clicked:
         
             progress.progress(min(idx / total, 1.0))
         
-            score = query_match_score(job, query)
+            if not is_title_candidate(job, query):
+                score = 0
+            else:
+                score = query_match_score(job, query)
 
             
             ai = heuristic_score(job)
