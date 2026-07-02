@@ -414,17 +414,13 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     debug_enabled = os.getenv("QUERY_MATCH_DEBUG", "").strip().lower() in {"1", "true", "yes", "on"}
 
-    # Normalize text so matching is consistent across punctuation, casing, and spacing.
     def normalize_text(text: str) -> str:
         text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
         return re.sub(r"\s+", " ", text).strip()
 
-    # Split text into meaningful tokens for word-based matching.
     def tokenize(text: str) -> List[str]:
         return [token for token in normalize_text(text).split() if len(token) > 1]
 
-    # Expand the query with a generic role-family synonym system.
-    # This keeps the matcher useful for many professions without hardcoding a single title.
     def expand_query_terms(tokens: List[str]) -> set:
         expanded = set(tokens)
         synonym_map = {
@@ -461,6 +457,59 @@ def query_match_score(job: Dict, search_query: str) -> int:
             expanded.update(synonym_map.get(token, []))
         return expanded
 
+    ROLE_FAMILIES = {
+        "data": ["data", "analytics", "analysis", "analyst", "bi", "dashboard", "sql", "database", "reporting", "intelligence", "insight", "tableau", "etl", "science"],
+        "software": ["software", "developer", "engineering", "programming", "backend", "frontend", "full stack", "devops", "qa", "cloud", "platform", "sre", "architect"],
+        "project": ["project", "program", "portfolio", "delivery", "pmo", "pm", "scrum", "agile", "product", "manager"],
+        "finance": ["finance", "financial", "accounting", "controller", "fpanda", "audit", "treasury", "budget"],
+        "hr": ["hr", "human resources", "people", "talent", "recruiter", "hrbp", "people operations"],
+        "procurement": ["procurement", "purchasing", "supply chain", "logistics", "vendor", "category", "operations"],
+        "gis": ["gis", "geospatial", "spatial", "mapping", "survey", "cartography"],
+        "sales": ["sales", "business development", "account executive", "customer success"],
+        "design": ["design", "ux", "ui", "product design", "visual", "graphic"],
+        "operations": ["operations", "ops", "business operations", "process", "service delivery"],
+        "legal": ["legal", "compliance", "regulatory", "contract"],
+        "medical": ["medical", "healthcare", "clinical", "nurse", "pharmacist"],
+        "education": ["education", "teacher", "trainer", "teaching"],
+    }
+
+    RELATED_FAMILIES = {
+        "data": {"software", "project", "finance", "hr", "operations"},
+        "software": {"data", "project", "design", "operations"},
+        "project": {"software", "data", "operations", "finance", "hr", "procurement"},
+        "finance": {"data", "project", "operations", "procurement"},
+        "hr": {"project", "operations", "procurement"},
+        "procurement": {"project", "finance", "operations", "hr"},
+        "gis": {"data", "software", "operations"},
+        "sales": {"project", "operations", "finance"},
+        "design": {"software", "project"},
+        "operations": {"project", "finance", "hr", "procurement", "software", "data"},
+    }
+
+    def detect_role_family(text: str) -> Optional[str]:
+        norm = normalize_text(text)
+        if not norm:
+            return None
+        tokens = set(tokenize(norm))
+        for family, aliases in ROLE_FAMILIES.items():
+            alias_tokens = []
+            for alias in aliases:
+                alias_tokens.extend(tokenize(alias))
+            if any(alias in norm for alias in aliases):
+                return family
+            if tokens & set(alias_tokens):
+                return family
+        return None
+
+    def family_relation(query_family: Optional[str], title_family: Optional[str]) -> str:
+        if not query_family or not title_family:
+            return "none"
+        if query_family == title_family:
+            return "same"
+        if title_family in RELATED_FAMILIES.get(query_family, set()) or query_family in RELATED_FAMILIES.get(title_family, set()):
+            return "related"
+        return "unrelated"
+
     title_text = normalize_text(title)
     description_text = normalize_text(description)
     full_text = f"{title_text} {description_text[:3000]}"
@@ -483,7 +532,6 @@ def query_match_score(job: Dict, search_query: str) -> int:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 0
 
-    # Exact phrase matches in the title get the highest score.
     if query in title_text:
         debug_info.update({
             "exact_phrase_title": True,
@@ -493,7 +541,6 @@ def query_match_score(job: Dict, search_query: str) -> int:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 100
 
-    # Exact phrase matches anywhere in the record also score highly.
     if query in full_text:
         debug_info.update({
             "exact_phrase_full_text": True,
@@ -516,7 +563,6 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title_word_set = set(title_tokens)
     description_word_set = set(description_tokens)
 
-    # Count direct and expanded matches separately so title matches are rewarded more.
     title_direct_matches = sum(1 for token in query_tokens if token in title_word_set)
     title_family_matches = sum(1 for term in expanded_query_terms if term in title_word_set)
     description_direct_matches = sum(1 for token in query_tokens if token in description_word_set)
@@ -524,9 +570,8 @@ def query_match_score(job: Dict, search_query: str) -> int:
 
     title_token_matches = sorted({token for token in query_tokens if token in title_word_set})
     description_token_matches = sorted({token for token in query_tokens if token in description_word_set})
-    synonym_matches = sorted({term for term in expanded_query_terms if term in title_word_set or term in description_word_set if term not in query_tokens})
+    synonym_matches = sorted({term for term in expanded_query_terms if term in title_word_set or term in description_word_set and term not in query_tokens})
 
-    # Role-like words are a strong signal for professional relatedness.
     role_tokens = {
         "analyst", "analysis", "analytics", "manager", "management", "developer",
         "development", "engineer", "engineering", "specialist", "expert",
@@ -536,20 +581,23 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title_role_matches = sum(1 for token in title_tokens if token in role_tokens)
     description_role_matches = sum(1 for token in description_tokens if token in role_tokens)
 
-    title_strength = (title_direct_matches * 5) + (title_family_matches * 3) + title_role_matches
+    query_family = detect_role_family(search_query)
+    title_family = detect_role_family(title)
+    family_relation_type = family_relation(query_family, title_family)
+
+    family_bonus = 0
+    if family_relation_type == "same":
+        family_bonus = 45
+    elif family_relation_type == "related":
+        family_bonus = 20
+
+    title_strength = (title_direct_matches * 5) + (title_family_matches * 3) + title_role_matches + family_bonus
     description_strength = (description_direct_matches * 3) + (description_family_matches * 2) + description_role_matches
 
-    # Penalize clearly unrelated professions even when generic words overlap.
-    unrelated_terms = {
-        "sales", "marketing", "finance", "financial", "accounting", "hr",
-        "human", "resources", "legal", "medical", "construction", "automotive",
-        "retail", "hospitality", "manufacturing", "customer", "service",
-        "teacher", "nurse", "receptionist", "driver", "mechanic",
-    }
-    unrelated_title_hit = bool(title_word_set & unrelated_terms)
-    unrelated_description_hit = bool(description_word_set & unrelated_terms)
-
     debug_info.update({
+        "query_family": query_family,
+        "title_family": title_family,
+        "family_relation": family_relation_type,
         "title_token_matches": title_token_matches,
         "description_token_matches": description_token_matches,
         "synonym_or_role_family_matches": synonym_matches,
@@ -557,64 +605,41 @@ def query_match_score(job: Dict, search_query: str) -> int:
         "description_strength": description_strength,
     })
 
-    # Strong title-based matches score very highly, including related role-family matches.
-    if title_direct_matches == len(query_tokens) and title_strength >= max(6, len(query_tokens) * 4):
-        debug_info["score"] = 100
-        debug_info["penalties"] = []
+    if title_direct_matches == len(query_tokens) and title_strength >= max(10, len(query_tokens) * 4):
+        debug_info["score"] = 95
         if debug_enabled:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 100
+        return 95
 
-    if title_strength >= max(4, len(query_tokens) * 3) and (title_direct_matches >= 1 or title_family_matches >= 1 or title_role_matches >= 1):
-        debug_info["score"] = 80
+    if title_strength >= max(10, len(query_tokens) * 4) and (title_direct_matches >= 1 or title_family_matches >= 1 or title_role_matches >= 1):
+        debug_info["score"] = 80 if family_relation_type == "same" else 65 if family_relation_type == "related" else 45
         if debug_enabled:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 80
+        return debug_info["score"]
 
-    if title_strength >= max(3, len(query_tokens) * 2) and (title_direct_matches >= 1 or title_family_matches >= 1):
-        debug_info["score"] = 70
+    if title_strength >= max(7, len(query_tokens) * 3) and (title_direct_matches >= 1 or title_family_matches >= 1):
+        debug_info["score"] = 70 if family_relation_type == "same" else 50 if family_relation_type == "related" else 30
         if debug_enabled:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 70
+        return debug_info["score"]
 
-    if title_strength >= max(2, len(query_tokens)) and (title_direct_matches >= 1 or title_family_matches >= 1):
-        debug_info["score"] = 55
+    if title_direct_matches > 0 and family_relation_type in {"same", "related"}:
+        debug_info["score"] = 45 if family_relation_type == "same" else 25
         if debug_enabled:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 55
+        return debug_info["score"]
 
-    # Title-only matches still get a meaningful score.
-    if title_direct_matches > 0:
-        debug_info["score"] = 40
+    if description_strength >= max(8, len(query_tokens) * 3) and family_relation_type in {"same", "related"}:
+        debug_info["score"] = 35 if family_relation_type == "same" else 20
         if debug_enabled:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 40
-
-    # Description-only matches are weaker, but still useful when the role family aligns.
-    if description_strength >= max(4, len(query_tokens) * 2) and not (unrelated_title_hit or unrelated_description_hit):
-        debug_info["score"] = 30
-        if debug_enabled:
-            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 30
+        return debug_info["score"]
 
     if description_direct_matches > 0 or description_family_matches > 0:
-        debug_info["score"] = 15
+        debug_info["score"] = 15 if family_relation_type in {"same", "related"} else 0
         if debug_enabled:
             print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 15
-
-    # Return zero for clearly unrelated professions.
-    if (unrelated_title_hit or unrelated_description_hit) and title_direct_matches <= 1 and description_strength <= 2:
-        penalties = []
-        if unrelated_title_hit:
-            penalties.append("unrelated title terms")
-        if unrelated_description_hit:
-            penalties.append("unrelated description terms")
-        debug_info["penalties"] = penalties
-        debug_info["score"] = 0
-        if debug_enabled:
-            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
-        return 0
+        return debug_info["score"]
 
     debug_info["score"] = 0
     if debug_enabled:
