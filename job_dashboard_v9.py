@@ -351,30 +351,38 @@ def query_match_score(job: Dict, search_query: str) -> int:
         return [token for token in normalize_text(text).split() if len(token) > 1]
 
     # Expand the query with a generic role-family synonym system.
-    # This is intentionally broad so it can work for many professions.
+    # This keeps the matcher useful for many professions without hardcoding a single title.
     def expand_query_terms(tokens: List[str]) -> set:
         expanded = set(tokens)
         synonym_map = {
-            "analyst": ["analysis", "analytics"],
-            "analytics": ["analysis", "analyst"],
-            "manager": ["management", "lead", "leadership", "supervisor"],
-            "developer": ["development", "engineering", "software", "programming"],
-            "engineer": ["engineering", "development", "developer", "programming"],
-            "specialist": ["expert", "focused"],
-            "officer": ["administrator", "coordinator", "lead"],
-            "coordinator": ["coordination", "program"],
-            "administrator": ["admin", "management", "officer"],
-            "scientist": ["science", "research"],
+            "analyst": ["analysis", "analytics", "analytic", "intelligence", "reporting"],
+            "analytics": ["analysis", "analyst", "reporting", "intelligence"],
+            "analysis": ["analytics", "analyst", "reporting", "intelligence"],
+            "manager": ["management", "lead", "leadership", "supervisor", "head"],
+            "developer": ["development", "engineering", "software", "programming", "build"],
+            "engineer": ["engineering", "development", "developer", "programming", "build"],
+            "specialist": ["expert", "focused", "consultant", "advisor"],
+            "officer": ["administrator", "coordinator", "lead", "support"],
+            "coordinator": ["coordination", "program", "project", "support"],
+            "administrator": ["admin", "management", "officer", "support"],
+            "scientist": ["science", "research", "analytics", "data"],
             "db": ["database"],
             "dba": ["database", "administrator"],
-            "sql": ["database", "query"],
-            "gis": ["geospatial", "spatial", "mapping"],
-            "bi": ["business intelligence", "analytics"],
-            "ml": ["machine learning", "ai"],
-            "pm": ["project", "programme"],
-            "pmo": ["project", "programme"],
+            "sql": ["database", "query", "data"],
+            "gis": ["geospatial", "spatial", "mapping", "survey"],
+            "bi": ["business", "intelligence", "analytics", "analysis"],
+            "ml": ["machine", "learning", "ai", "analytics"],
+            "pm": ["project", "programme", "program"],
+            "pmo": ["project", "programme", "program"],
             "python": ["backend", "software", "programming", "code", "data"],
-            "data": ["analytics", "database", "intelligence", "science"],
+            "data": ["analytics", "database", "intelligence", "science", "information"],
+            "system": ["systems", "information", "technology", "it"],
+            "systems": ["system", "information", "technology", "it"],
+            "information": ["system", "systems", "technology", "it"],
+            "business": ["business", "intelligence", "ops", "operations"],
+            "intelligence": ["business", "analytics", "analysis", "insight"],
+            "reporting": ["report", "analytics", "analysis", "data"],
+            "assistant": ["assistant", "support", "coordinator", "administrator"],
         }
         for token in tokens:
             expanded.update(synonym_map.get(token, []))
@@ -413,8 +421,18 @@ def query_match_score(job: Dict, search_query: str) -> int:
     description_direct_matches = sum(1 for token in query_tokens if token in description_word_set)
     description_family_matches = sum(1 for term in expanded_query_terms if term in description_word_set)
 
-    title_strength = (title_direct_matches * 4) + title_family_matches
-    description_strength = (description_direct_matches * 2) + description_family_matches
+    # Role-like words are a strong signal for professional relatedness.
+    role_tokens = {
+        "analyst", "analysis", "analytics", "manager", "management", "developer",
+        "development", "engineer", "engineering", "specialist", "expert",
+        "assistant", "officer", "administrator", "coordinator", "scientist",
+        "research", "consultant", "advisor", "technician", "programmer"
+    }
+    title_role_matches = sum(1 for token in title_tokens if token in role_tokens)
+    description_role_matches = sum(1 for token in description_tokens if token in role_tokens)
+
+    title_strength = (title_direct_matches * 5) + (title_family_matches * 3) + title_role_matches
+    description_strength = (description_direct_matches * 3) + (description_family_matches * 2) + description_role_matches
 
     # Penalize clearly unrelated professions even when generic words overlap.
     unrelated_terms = {
@@ -426,26 +444,26 @@ def query_match_score(job: Dict, search_query: str) -> int:
     unrelated_title_hit = bool(title_word_set & unrelated_terms)
     unrelated_description_hit = bool(description_word_set & unrelated_terms)
 
-    # Strong title-based matches score very highly.
-    if title_direct_matches == len(query_tokens) and title_strength >= len(query_tokens) * 4:
+    # Strong title-based matches score very highly, including related role-family matches.
+    if title_direct_matches == len(query_tokens) and title_strength >= max(6, len(query_tokens) * 4):
         return 100
 
-    if title_strength >= max(6, len(query_tokens) * 3) and title_direct_matches >= max(1, len(query_tokens) - 1):
-        return 85
+    if title_strength >= max(4, len(query_tokens) * 3) and (title_direct_matches >= 1 or title_family_matches >= 1 or title_role_matches >= 1):
+        return 80
 
-    if title_strength >= max(4, len(query_tokens) * 2) and title_direct_matches >= 1:
-        return 75
+    if title_strength >= max(3, len(query_tokens) * 2) and (title_direct_matches >= 1 or title_family_matches >= 1):
+        return 70
 
-    if title_strength >= max(3, len(query_tokens)) and (description_strength >= 2 or title_direct_matches >= 1):
-        return 60
+    if title_strength >= max(2, len(query_tokens)) and (title_direct_matches >= 1 or title_family_matches >= 1):
+        return 55
 
     # Title-only matches still get a meaningful score.
     if title_direct_matches > 0:
         return 40
 
-    # Description-only matches are weaker.
-    if description_strength >= 3 and not (unrelated_title_hit or unrelated_description_hit):
-        return 25
+    # Description-only matches are weaker, but still useful when the role family aligns.
+    if description_strength >= max(4, len(query_tokens) * 2) and not (unrelated_title_hit or unrelated_description_hit):
+        return 30
 
     if description_direct_matches > 0 or description_family_matches > 0:
         return 15
