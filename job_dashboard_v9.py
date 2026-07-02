@@ -341,6 +341,10 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title = str(job.get("title", ""))
     description = str(job.get("description", ""))
 
+    import os
+
+    debug_enabled = os.getenv("QUERY_MATCH_DEBUG", "").strip().lower() in {"1", "true", "yes", "on"}
+
     # Normalize text so matching is consistent across punctuation, casing, and spacing.
     def normalize_text(text: str) -> str:
         text = re.sub(r"[^a-z0-9\s]+", " ", str(text or "").lower())
@@ -393,15 +397,41 @@ def query_match_score(job: Dict, search_query: str) -> int:
     full_text = f"{title_text} {description_text[:3000]}"
     query = normalize_text(search_query)
 
+    debug_info = {
+        "query": search_query,
+        "title": title,
+        "exact_phrase_title": False,
+        "exact_phrase_full_text": False,
+        "title_token_matches": [],
+        "description_token_matches": [],
+        "synonym_or_role_family_matches": [],
+        "penalties": [],
+        "score": 0,
+    }
+
     if not full_text or not query:
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 0
 
     # Exact phrase matches in the title get the highest score.
     if query in title_text:
+        debug_info.update({
+            "exact_phrase_title": True,
+            "score": 100,
+        })
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 100
 
     # Exact phrase matches anywhere in the record also score highly.
     if query in full_text:
+        debug_info.update({
+            "exact_phrase_full_text": True,
+            "score": 90,
+        })
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 90
 
     query_tokens = tokenize(query)
@@ -409,6 +439,8 @@ def query_match_score(job: Dict, search_query: str) -> int:
     description_tokens = tokenize(description_text)
 
     if not query_tokens:
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 0
 
     expanded_query_terms = expand_query_terms(query_tokens)
@@ -420,6 +452,10 @@ def query_match_score(job: Dict, search_query: str) -> int:
     title_family_matches = sum(1 for term in expanded_query_terms if term in title_word_set)
     description_direct_matches = sum(1 for token in query_tokens if token in description_word_set)
     description_family_matches = sum(1 for term in expanded_query_terms if term in description_word_set)
+
+    title_token_matches = sorted({token for token in query_tokens if token in title_word_set})
+    description_token_matches = sorted({token for token in query_tokens if token in description_word_set})
+    synonym_matches = sorted({term for term in expanded_query_terms if term in title_word_set or term in description_word_set if term not in query_tokens})
 
     # Role-like words are a strong signal for professional relatedness.
     role_tokens = {
@@ -444,34 +480,76 @@ def query_match_score(job: Dict, search_query: str) -> int:
     unrelated_title_hit = bool(title_word_set & unrelated_terms)
     unrelated_description_hit = bool(description_word_set & unrelated_terms)
 
+    debug_info.update({
+        "title_token_matches": title_token_matches,
+        "description_token_matches": description_token_matches,
+        "synonym_or_role_family_matches": synonym_matches,
+        "title_strength": title_strength,
+        "description_strength": description_strength,
+    })
+
     # Strong title-based matches score very highly, including related role-family matches.
     if title_direct_matches == len(query_tokens) and title_strength >= max(6, len(query_tokens) * 4):
+        debug_info["score"] = 100
+        debug_info["penalties"] = []
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 100
 
     if title_strength >= max(4, len(query_tokens) * 3) and (title_direct_matches >= 1 or title_family_matches >= 1 or title_role_matches >= 1):
+        debug_info["score"] = 80
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 80
 
     if title_strength >= max(3, len(query_tokens) * 2) and (title_direct_matches >= 1 or title_family_matches >= 1):
+        debug_info["score"] = 70
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 70
 
     if title_strength >= max(2, len(query_tokens)) and (title_direct_matches >= 1 or title_family_matches >= 1):
+        debug_info["score"] = 55
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 55
 
     # Title-only matches still get a meaningful score.
     if title_direct_matches > 0:
+        debug_info["score"] = 40
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 40
 
     # Description-only matches are weaker, but still useful when the role family aligns.
     if description_strength >= max(4, len(query_tokens) * 2) and not (unrelated_title_hit or unrelated_description_hit):
+        debug_info["score"] = 30
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 30
 
     if description_direct_matches > 0 or description_family_matches > 0:
+        debug_info["score"] = 15
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 15
 
     # Return zero for clearly unrelated professions.
     if (unrelated_title_hit or unrelated_description_hit) and title_direct_matches <= 1 and description_strength <= 2:
+        penalties = []
+        if unrelated_title_hit:
+            penalties.append("unrelated title terms")
+        if unrelated_description_hit:
+            penalties.append("unrelated description terms")
+        debug_info["penalties"] = penalties
+        debug_info["score"] = 0
+        if debug_enabled:
+            print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
         return 0
 
+    debug_info["score"] = 0
+    if debug_enabled:
+        print("[query_match_score]", json.dumps(debug_info, ensure_ascii=False))
     return 0
 
 def heuristic_score(job: Dict) -> Dict:
