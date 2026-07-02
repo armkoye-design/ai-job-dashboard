@@ -875,9 +875,20 @@ def scrape_html_jobs_from_site(country: str, base: str, seeds: List[str], query:
 
         return any(term in title_tokens for term in expanded_terms)
 
-    for path in seeds:
-        url = urljoin(base, path)
-       
+    parsed_base = urlparse(base).netloc.lower()
+    is_englishjobs_network = any(host in parsed_base for host in ("englishjobs.", "englishjobsearch."))
+    seed_urls = []
+
+    if query and is_englishjobs_network:
+        encoded_query = requests.utils.quote(query, safe="")
+        normalized_query = requests.utils.quote(query.replace(" ", "_"), safe="")
+        seed_urls.append(f"{base}/search?q={encoded_query}")
+        for page in range(2, 6):
+            seed_urls.append(f"{base}/jobs/{normalized_query}?page={page}")
+    else:
+        seed_urls = [urljoin(base, path) for path in seeds]
+
+    for url in dict.fromkeys(seed_urls):
         try:
             resp = SESSION.get(url, timeout=20)
             if resp.status_code >= 400:
